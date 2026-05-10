@@ -90,12 +90,14 @@ function studyToEvent(study, subjects) {
   };
 }
 
-function examToEvent(exam) {
+function examToEvent(exam, subjects) {
+  const subject = subjects.find(s => s.name === exam.subject);
+  const color = subject?.color ?? '#6B7280';
   return {
     id: `exam-${exam.id}`,
     title: `📝 ${exam.subject}`,
     start: exam.date,
-    backgroundColor: '#111827',
+    backgroundColor: color,
     borderColor: '#111827',
     textColor: '#ffffff',
     extendedProps: {
@@ -121,7 +123,7 @@ export default function StudyCalendar() {
   const fcEvents = useMemo(
     () => [
       ...studies.map(s => studyToEvent(s, subjects)),
-      ...exams.map(e => examToEvent(e)),
+      ...exams.map(e => examToEvent(e, subjects)),
     ],
     [studies, subjects, exams],
   );
