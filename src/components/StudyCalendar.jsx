@@ -8,6 +8,49 @@ import { useStudies, useSubjects } from '../hooks/useStudies';
 import AddStudyModal from './AddStudyModal';
 import EventPopup from './EventPopup';
 
+// 2025~2026 한국 법정공휴일
+const HOLIDAYS = new Set([
+  // 2025
+  '2025-01-01', // 신정
+  '2025-01-28', // 설날 연휴
+  '2025-01-29', // 설날
+  '2025-01-30', // 설날 연휴
+  '2025-03-01', // 삼일절 (토)
+  '2025-03-03', // 삼일절 대체공휴일 (토→월)
+  '2025-05-05', // 어린이날 · 부처님오신날
+  '2025-05-06', // 대체공휴일
+  '2025-06-06', // 현충일
+  '2025-08-15', // 광복절
+  '2025-10-03', // 개천절
+  '2025-10-05', // 추석 연휴 (일)
+  '2025-10-06', // 추석
+  '2025-10-07', // 추석 연휴
+  '2025-10-08', // 추석 대체공휴일 (일→수)
+  '2025-10-09', // 한글날
+  '2025-12-25', // 성탄절
+  // 2026
+  '2026-01-01', // 신정
+  '2026-02-16', // 설날 연휴
+  '2026-02-17', // 설날
+  '2026-02-18', // 설날 연휴
+  '2026-03-01', // 삼일절 (일)
+  '2026-03-02', // 삼일절 대체공휴일 (일→월)
+  '2026-05-05', // 어린이날
+  '2026-05-24', // 부처님오신날 (일)
+  '2026-05-25', // 부처님오신날 대체공휴일 (일→월)
+  '2026-06-06', // 현충일 (토)
+  '2026-06-08', // 현충일 대체공휴일 (토→월)
+  '2026-08-15', // 광복절 (토)
+  '2026-08-17', // 광복절 대체공휴일 (토→월)
+  '2026-09-24', // 추석 연휴
+  '2026-09-25', // 추석
+  '2026-09-26', // 추석 연휴
+  '2026-10-03', // 개천절 (토)
+  '2026-10-05', // 개천절 대체공휴일 (토→월)
+  '2026-10-09', // 한글날
+  '2026-12-25', // 성탄절
+]);
+
 const ABBR = { '수학': '수', '영어': '영', '국어': '국', '과학': '과' };
 const getAbbr = (name) => ABBR[name] ?? name.charAt(0);
 
@@ -93,6 +136,23 @@ export default function StudyCalendar() {
     );
   }, []);
 
+  const dayCellContent = useCallback((arg) => {
+    const dow = arg.date.getDay(); // 0=일, 6=토
+    const dateStr = [
+      arg.date.getFullYear(),
+      String(arg.date.getMonth() + 1).padStart(2, '0'),
+      String(arg.date.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    let cls = '';
+    if (dow === 0 || HOLIDAYS.has(dateStr)) cls = 'text-red-500';
+    else if (dow === 6) cls = 'text-blue-500';
+
+    return cls
+      ? <span className={cls}>{arg.dayNumberText}</span>
+      : <span>{arg.dayNumberText}</span>;
+  }, []);
+
   async function handleSave({ subject, difficulty, minutes, memo }) {
     if (modalState.editStudyId) {
       await db.studies.update(modalState.editStudyId, { subject, difficulty, minutes, memo });
@@ -144,6 +204,7 @@ export default function StudyCalendar() {
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
         eventContent={renderEventContent}
+        dayCellContent={dayCellContent}
         height="auto"
       />
       <AddStudyModal

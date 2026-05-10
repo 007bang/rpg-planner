@@ -62,17 +62,20 @@ export default function WeeklyReport() {
     const rate = Math.round((weekDone.length / weekAll.length) * 100);
     const streak = calcStreak(studies.filter(s => s.status === 'completed'));
 
+    // 과목별 분 합산
     const minsBySubject = {};
     for (const s of weekDone) {
       minsBySubject[s.subject] = (minsBySubject[s.subject] ?? 0) + s.minutes;
     }
     const entries = Object.entries(minsBySubject);
-    const weakestEntry = entries.length > 0
-      ? entries.reduce((a, b) => (a[1] <= b[1] ? a : b))
-      : null;
-    const weakest = weakestEntry
-      ? { name: weakestEntry[0], minutes: weakestEntry[1] }
-      : null;
+
+    // 최솟값과 동점 과목 전부 수집
+    let weakest = null;
+    if (entries.length > 0) {
+      const minMins = Math.min(...entries.map(e => e[1]));
+      const names   = entries.filter(e => e[1] === minMins).map(e => e[0]);
+      weakest = { names, minutes: minMins };
+    }
 
     return {
       empty: false,
@@ -100,6 +103,18 @@ export default function WeeklyReport() {
     stats.streak  > 0 ? `${stats.streak}일 연속` :
                         '연속 기록 없음';
 
+  const weakValue = stats.weakest
+    ? stats.weakest.names.length === 1
+      ? stats.weakest.names[0]
+      : `${stats.weakest.names.length}과목 공동`
+    : '-';
+
+  const weakSub = stats.weakest
+    ? stats.weakest.names.length > 1
+      ? `⚠️ ${stats.weakest.names.join(' · ')} (각 ${stats.weakest.minutes}분)`
+      : `⚠️ ${stats.weakest.minutes}분`
+    : '완료 기록 없음';
+
   return (
     <div className="space-y-2">
       <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest px-1">
@@ -119,9 +134,9 @@ export default function WeeklyReport() {
           valueClass="text-orange-500"
         />
         <StatCard
-          value={stats.weakest ? stats.weakest.name : '-'}
+          value={weakValue}
           label="약한 과목"
-          sub={stats.weakest ? `⚠️ ${stats.weakest.minutes}분` : '완료 기록 없음'}
+          sub={weakSub}
           valueClass="text-amber-500"
         />
       </div>
