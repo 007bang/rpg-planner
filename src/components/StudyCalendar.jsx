@@ -56,19 +56,15 @@ const HOLIDAYS = new Set([
   '2026-12-25', // 성탄절
 ]);
 
-const ABBR = { '수학': '수', '영어': '영', '국어': '국', '과학': '과' };
-const getAbbr = (name) => ABBR[name] ?? name.charAt(0);
-
 function studyToEvent(study, subjects) {
   const subject = subjects.find(s => s.name === study.subject);
   const color = subject?.color ?? '#6B7280';
-  const abbr = getAbbr(study.subject);
   const status = study.status ?? 'pending';
 
   const title =
-    status === 'completed' ? `✓ ${abbr}` :
-    status === 'studying'  ? `▶ ${abbr}` :
-    abbr;
+    status === 'completed' ? `✓ ${study.subject}` :
+    status === 'studying'  ? `▶ ${study.subject}` :
+    study.subject;
 
   return {
     id: study.eventId,
