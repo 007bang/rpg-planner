@@ -16,3 +16,7 @@ export function useExams() {
 export function useCharacter() {
   return useLiveQuery(() => db.characters.toArray(), []);
 }
+
+export function useQuests() {
+  return useLiveQuery(() => db.quests.toArray(), []);
+}

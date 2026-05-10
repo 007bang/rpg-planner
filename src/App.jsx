@@ -5,6 +5,7 @@ import StatusPanel from './components/StatusPanel';
 import DdayBanner from './components/DdayBanner';
 import StudyCalendar from './components/StudyCalendar';
 import StatsPanel from './components/StatsPanel';
+import QuestPanel from './components/QuestPanel';
 import SettingsPanel from './components/SettingsPanel';
 import InfoPanel from './components/InfoPanel';
 import CharacterSetup from './components/CharacterSetup';
@@ -25,6 +26,7 @@ export default function App() {
       <DdayBanner />
       <StudyCalendar />
       <StatsPanel />
+      <QuestPanel />
       <SettingsPanel />
       <InfoPanel />
     </div>

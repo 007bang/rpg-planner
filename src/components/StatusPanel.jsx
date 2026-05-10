@@ -33,6 +33,7 @@ export default function StatusPanel() {
           <span className="text-xl">{JOB_ICONS[character.job]}</span>
           <span className="font-bold">{character.nickname}</span>
           <span className="text-xs text-indigo-300 ml-1">{JOB_LABELS[character.job]}</span>
+          <span className="ml-auto text-sm font-bold text-yellow-300">🪙 {character.coin ?? 0}</span>
         </div>
       )}
 
