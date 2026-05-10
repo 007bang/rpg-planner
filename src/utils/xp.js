@@ -1,4 +1,10 @@
-const DIFF_MULT = { easy: 0.8, normal: 1.0, hard: 1.5 };
+const JOB_MULT = {
+  warrior: { hard: 1.8, normal: 1.0, easy: 0.7 },
+  mage:    { hard: 1.3, normal: 1.2, easy: 1.0 },
+  archer:  { hard: 1.5, normal: 1.1, easy: 0.9 },
+};
+const DEFAULT_MULT = { hard: 1.5, normal: 1.0, easy: 0.8 };
+
 const DAY_CAP = 400;
 
 const LEVELS = [
@@ -32,7 +38,9 @@ function calcStreak(dateSet) {
   return streak;
 }
 
-export function computeStats(studies) {
+export function computeStats(studies, job = null) {
+  const DIFF_MULT = (job && JOB_MULT[job]) ? JOB_MULT[job] : DEFAULT_MULT;
+
   const completed = studies.filter(s => s.status === 'completed');
 
   const rawByDate = {};

@@ -23,6 +23,13 @@ db.version(3).stores({
   exams: '++id, date, subject, range',
 });
 
+db.version(4).stores({
+  studies:    '++id, eventId, date, subject, difficulty, minutes, status',
+  subjects:   '++id, name, color',
+  exams:      '++id, date, subject, range',
+  characters: '++id, nickname, job, coin',
+});
+
 const DEFAULT_SUBJECTS = [
   { name: '수학', color: '#3B82F6' },
   { name: '영어', color: '#10B981' },

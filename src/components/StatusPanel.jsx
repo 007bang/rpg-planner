@@ -1,4 +1,4 @@
-import { useStudies } from '../hooks/useStudies';
+import { useStudies, useCharacter } from '../hooks/useStudies';
 import { computeStats } from '../utils/xp';
 
 const BADGE_LIST = [
@@ -8,19 +8,34 @@ const BADGE_LIST = [
   { key: 'levelMaster',   icon: '👑', label: '레벨 마스터' },
 ];
 
+const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
+const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
+
 function scrollToInfo() {
   document.getElementById('info-section')?.scrollIntoView({ behavior: 'smooth' });
 }
 
 export default function StatusPanel() {
-  const studies = useStudies();
+  const studies    = useStudies();
+  const characters = useCharacter();
 
-  if (studies === undefined) return null;
+  if (studies === undefined || characters === undefined) return null;
 
-  const { totalXP, todayXP, streak, level, levelName, progress, remaining, badges } = computeStats(studies);
+  const character = characters[0] ?? null;
+  const { totalXP, todayXP, streak, level, levelName, progress, remaining, badges } =
+    computeStats(studies, character?.job ?? null);
 
   return (
     <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white rounded-2xl p-5 mx-4 mt-4 shadow-xl">
+      {/* 캐릭터 정보 */}
+      {character && (
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+          <span className="text-xl">{JOB_ICONS[character.job]}</span>
+          <span className="font-bold">{character.nickname}</span>
+          <span className="text-xs text-indigo-300 ml-1">{JOB_LABELS[character.job]}</span>
+        </div>
+      )}
+
       {/* 레벨 헤더 */}
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -89,7 +104,7 @@ export default function StatusPanel() {
         </div>
       </div>
 
-      {/* 뱃지 아이콘 요약 — 클릭 시 info-section으로 스크롤 */}
+      {/* 뱃지 아이콘 요약 */}
       <div
         className="flex justify-around border-t border-white/10 pt-4 cursor-pointer hover:opacity-80 transition-opacity"
         onClick={scrollToInfo}

@@ -1,7 +1,11 @@
 import { useState, useRef } from 'react';
 import { db } from '../db/db';
 import { useToast } from '../hooks/useToast';
+import { useCharacter } from '../hooks/useStudies';
 import SubjectManager from './SubjectManager';
+
+const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
+const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
 
 const VALID_STATUSES = ['pending', 'studying', 'completed'];
 
@@ -34,6 +38,24 @@ export default function SettingsPanel() {
   const fileInputRef = useRef(null);
   const importModeRef = useRef('add');
   const { msg: toastMsg, show: showToast } = useToast();
+
+  const characters = useCharacter();
+  const character = characters?.[0] ?? null;
+  const [editChar, setEditChar] = useState(false);
+  const [charNickname, setCharNickname] = useState('');
+  const [charJob, setCharJob] = useState('');
+
+  function startEditChar() {
+    setCharNickname(character?.nickname ?? '');
+    setCharJob(character?.job ?? '');
+    setEditChar(true);
+  }
+
+  async function saveChar() {
+    if (!charNickname.trim() || !charJob || !character) return;
+    await db.characters.update(character.id, { nickname: charNickname.trim(), job: charJob });
+    setEditChar(false);
+  }
 
   async function handleExport() {
     setExporting(true);
@@ -122,6 +144,75 @@ export default function SettingsPanel() {
   return (
     <div className="mx-4 mb-4">
       <h2 className="text-lg font-bold text-gray-800 px-1 mb-3">설정</h2>
+
+      {/* 캐릭터 */}
+      {character && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <p className="font-medium text-gray-800">캐릭터</p>
+              <p className="text-xs text-gray-400 mt-0.5">닉네임과 직업을 변경합니다</p>
+            </div>
+            {!editChar && (
+              <button
+                onClick={startEditChar}
+                className="min-h-[36px] px-4 rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                수정
+              </button>
+            )}
+          </div>
+          {editChar ? (
+            <div className="px-5 py-4 space-y-3">
+              <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                닉네임
+                <input
+                  type="text"
+                  value={charNickname}
+                  onChange={e => setCharNickname(e.target.value)}
+                  maxLength={12}
+                  className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                직업
+                <select
+                  value={charJob}
+                  onChange={e => setCharJob(e.target.value)}
+                  className="border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  <option value="warrior">⚔️ 전사 — 어려움 ×1.8</option>
+                  <option value="mage">🧙 마법사 — 보통 ×1.2</option>
+                  <option value="archer">🏹 궁수 — 어려움 ×1.5</option>
+                </select>
+              </label>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setEditChar(false)}
+                  className="flex-1 min-h-[40px] rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={saveChar}
+                  disabled={!charNickname.trim() || !charJob}
+                  className="flex-1 min-h-[40px] rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="px-5 py-4 flex items-center gap-3">
+              <span className="text-2xl">{JOB_ICONS[character.job]}</span>
+              <div>
+                <p className="font-medium text-gray-800">{character.nickname}</p>
+                <p className="text-xs text-gray-400">{JOB_LABELS[character.job]}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 과목 관리 */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4">

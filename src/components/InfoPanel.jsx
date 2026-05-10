@@ -1,4 +1,4 @@
-import { useStudies } from '../hooks/useStudies';
+import { useStudies, useCharacter } from '../hooks/useStudies';
 import { computeStats } from '../utils/xp';
 
 const LEVEL_INFO = [
@@ -15,11 +15,13 @@ const BADGE_DETAIL = [
 ];
 
 export default function InfoPanel() {
-  const studies = useStudies();
+  const studies    = useStudies();
+  const characters = useCharacter();
 
-  if (studies === undefined) return null;
+  if (studies === undefined || characters === undefined) return null;
 
-  const { level, badges } = computeStats(studies);
+  const character = characters[0] ?? null;
+  const { level, badges } = computeStats(studies, character?.job ?? null);
 
   return (
     <div id="info-section" className="mx-4 mb-4 space-y-3">
