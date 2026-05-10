@@ -87,7 +87,9 @@ export default function QuestPanel() {
     await db.quests.delete(quest.id);
   }
 
-  const isToday = selectedDate === todayStr();
+  const today = todayStr();
+  const isToday = selectedDate === today;
+  console.log('[QuestPanel] selectedDate:', selectedDate, '| todayStr():', today, '| isToday:', isToday);
 
   return (
     <div className="mx-4 mb-4">
@@ -103,30 +105,30 @@ export default function QuestPanel() {
       </div>
 
       {/* 날짜 탐색 */}
-      <div className="flex items-center justify-between bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2 mb-3">
-        <button
-          onClick={() => setSelectedDate(d => addDays(d, -1))}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 font-bold transition-colors"
-        >
-          ‹
-        </button>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2 mb-3">
+        <div className="flex items-center justify-between w-full">
+          <button
+            onClick={() => setSelectedDate(d => addDays(d, -1))}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 font-bold transition-colors"
+          >
+            ‹
+          </button>
           <span className="text-sm font-medium text-gray-800">{formatDate(selectedDate)}</span>
-          {!isToday && (
-            <button
-              onClick={() => setSelectedDate(todayStr())}
-              className="text-xs text-indigo-500 font-medium hover:text-indigo-700"
-            >
-              오늘
-            </button>
-          )}
+          <button
+            onClick={() => setSelectedDate(d => addDays(d, 1))}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 font-bold transition-colors"
+          >
+            ›
+          </button>
         </div>
-        <button
-          onClick={() => setSelectedDate(d => addDays(d, 1))}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 font-bold transition-colors"
-        >
-          ›
-        </button>
+        {!isToday && (
+          <button
+            onClick={() => setSelectedDate(today)}
+            className="text-xs text-indigo-500 font-medium hover:text-indigo-700"
+          >
+            오늘로 돌아가기
+          </button>
+        )}
       </div>
 
       {/* 탭 */}
