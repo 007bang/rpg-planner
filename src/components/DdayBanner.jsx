@@ -23,7 +23,7 @@ export default function DdayBanner() {
   if (upcoming.length === 0) return null;
 
   return (
-    <div className="mx-4 mb-1 flex gap-2 flex-wrap">
+    <div className="mx-4 mt-4 mb-1 flex gap-2 flex-wrap">
       {upcoming.map(exam => {
         const color = subjects.find(s => s.name === exam.subject)?.color ?? '#6B7280';
         return (
