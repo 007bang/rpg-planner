@@ -25,9 +25,9 @@ export default function App() {
       <StatusPanel />
       <DdayBanner />
       <StudyCalendar />
-      <StatsPanel />
       <QuestPanel />
       <SettingsPanel />
+      <StatsPanel />
       <InfoPanel />
     </div>
   );
