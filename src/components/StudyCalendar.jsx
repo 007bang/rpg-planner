@@ -68,6 +68,16 @@ export default function StudyCalendar() {
     });
   }, []);
 
+  const handleEventDrop = useCallback(async (info) => {
+    const { studyId } = info.event.extendedProps;
+    const newDate = info.event.startStr.slice(0, 10);
+    try {
+      await db.studies.update(studyId, { date: newDate });
+    } catch {
+      info.revert();
+    }
+  }, []);
+
   const renderEventContent = useCallback((eventInfo) => {
     const { completed } = eventInfo.event.extendedProps;
     return (
@@ -123,8 +133,10 @@ export default function StudyCalendar() {
         initialView="dayGridMonth"
         locale={koLocale}
         events={fcEvents}
+        editable={true}
         dateClick={handleDateClick}
         eventClick={handleEventClick}
+        eventDrop={handleEventDrop}
         eventContent={renderEventContent}
         height="auto"
       />

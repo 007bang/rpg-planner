@@ -23,6 +23,12 @@ function localDateStr(date = new Date()) {
   return `${y}-${m}-${d}`;
 }
 
+function monthStr(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
 const BAR_OPTIONS = {
   indexAxis: 'y',
   responsive: true,
@@ -46,6 +52,23 @@ const LINE_OPTIONS = {
   plugins: {
     legend: { display: false },
     title: { display: true, text: '최근 7일 일별 공부시간', font: { size: 14, weight: 'bold' } },
+    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}분` } },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: { callback: v => `${v}분` },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+    },
+    x: { grid: { display: false } },
+  },
+};
+
+const MONTHLY_OPTIONS = {
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    title: { display: true, text: '월별 공부시간 비교', font: { size: 14, weight: 'bold' } },
     tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}분` } },
   },
   scales: {
@@ -106,6 +129,35 @@ export default function StatsPanel() {
     };
   }, [studies]);
 
+  const monthlyData = useMemo(() => {
+    const currentMonth = monthStr();
+    const last6 = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - (5 - i));
+      return monthStr(d);
+    });
+    const minutesByMonth = {};
+    for (const s of studies) {
+      const m = s.date.slice(0, 7);
+      minutesByMonth[m] = (minutesByMonth[m] ?? 0) + s.minutes;
+    }
+    return {
+      labels: last6.map(m => {
+        const [y, mo] = m.split('-');
+        return `${y.slice(2)}년 ${parseInt(mo)}월`;
+      }),
+      datasets: [{
+        data: last6.map(m => minutesByMonth[m] ?? 0),
+        backgroundColor: last6.map(m =>
+          m === currentMonth ? '#6366f1' : 'rgba(99,102,241,0.3)'
+        ),
+        borderRadius: 6,
+        borderSkipped: false,
+      }],
+    };
+  }, [studies]);
+
   if (allStudies === undefined) return null;
 
   return (
@@ -121,10 +173,13 @@ export default function StatsPanel() {
       ) : (
         <>
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <Bar data={barData} options={BAR_OPTIONS} />
+            <Bar data={monthlyData} options={MONTHLY_OPTIONS} />
           </div>
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <Line data={lineData} options={LINE_OPTIONS} />
+          </div>
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <Bar data={barData} options={BAR_OPTIONS} />
           </div>
         </>
       )}
