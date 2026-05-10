@@ -38,6 +38,18 @@ db.version(5).stores({
   quests:     '++id, title, subject, difficulty, coin, status',
 });
 
+db.version(6).stores({
+  studies:    '++id, eventId, date, subject, difficulty, minutes, status',
+  subjects:   '++id, name, color',
+  exams:      '++id, date, subject, range',
+  characters: '++id, nickname, job, coin',
+  quests:     '++id, title, subject, difficulty, coin, status, date',
+}).upgrade(tx =>
+  tx.table('quests').toCollection().modify(quest => {
+    if (!quest.date) quest.date = new Date().toISOString().slice(0, 10);
+  })
+);
+
 const DEFAULT_SUBJECTS = [
   { name: '수학', color: '#3B82F6' },
   { name: '영어', color: '#10B981' },
