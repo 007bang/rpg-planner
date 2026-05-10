@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { db } from '../db/db';
 import { useQuests, useCharacter } from '../hooks/useStudies';
 
-const COIN_BY_DIFF = { easy: 2, normal: 5, hard: 10 };
-const DIFF_LABELS  = { easy: '쉬움', normal: '보통', hard: '어려움' };
+const COIN_BY_DIFF  = { easy: 2, normal: 5, hard: 10 };
+const DIFF_BORDER   = { easy: 'border-green-400', normal: 'border-blue-400', hard: 'border-red-400' };
 
 function todayStr() {
   const d = new Date();
@@ -28,23 +28,24 @@ export default function QuestPanel() {
   const characters = useCharacter() ?? [];
 
   const [selectedDate, setSelectedDate] = useState(todayStr());
-  const [tab,   setTab]   = useState('pending');
   const [modal, setModal] = useState(MODAL_CLOSED);
 
   const character  = characters[0] ?? null;
   const isEdit     = !!modal.questId;
   const coinReward = COIN_BY_DIFF[modal.difficulty] ?? 0;
 
-  const dayQuests = quests.filter(q => q.date === selectedDate);
-  const filtered  = dayQuests.filter(q => q.status === tab);
+  const today   = todayStr();
+  const isToday = selectedDate === today;
 
-  const countByTab = {
-    pending:   dayQuests.filter(q => q.status === 'pending').length,
-    completed: dayQuests.filter(q => q.status === 'completed').length,
-  };
+  const sorted = quests
+    .filter(q => q.date === selectedDate)
+    .sort((a, b) => {
+      if (a.status === b.status) return 0;
+      return a.status === 'completed' ? 1 : -1;
+    });
 
   function openAdd() {
-    setModal({ open: true, questId: null, title: '', subject: '', difficulty: '', date: selectedDate });
+    setModal({ open: true, questId: null, title: '', difficulty: '', date: selectedDate });
   }
 
   function openEdit(quest) {
@@ -66,29 +67,24 @@ export default function QuestPanel() {
     setModal(MODAL_CLOSED);
   }
 
-  async function handleComplete(quest) {
+  async function handleToggle(quest) {
     if (!character) return;
-    await db.transaction('rw', db.quests, db.characters, async () => {
-      await db.quests.update(quest.id, { status: 'completed' });
-      await db.characters.update(character.id, { coin: (character.coin ?? 0) + quest.coin });
-    });
-  }
-
-  async function handleUndo(quest) {
-    if (!character) return;
-    await db.transaction('rw', db.quests, db.characters, async () => {
-      await db.quests.update(quest.id, { status: 'pending' });
-      await db.characters.update(character.id, { coin: Math.max(0, (character.coin ?? 0) - quest.coin) });
-    });
+    if (quest.status === 'completed') {
+      await db.transaction('rw', db.quests, db.characters, async () => {
+        await db.quests.update(quest.id, { status: 'pending' });
+        await db.characters.update(character.id, { coin: Math.max(0, (character.coin ?? 0) - quest.coin) });
+      });
+    } else {
+      await db.transaction('rw', db.quests, db.characters, async () => {
+        await db.quests.update(quest.id, { status: 'completed' });
+        await db.characters.update(character.id, { coin: (character.coin ?? 0) + quest.coin });
+      });
+    }
   }
 
   async function handleDelete(quest) {
     await db.quests.delete(quest.id);
   }
-
-  const today = todayStr();
-  const isToday = selectedDate === today;
-  console.log('[QuestPanel] selectedDate:', selectedDate, '| todayStr():', today, '| isToday:', isToday);
 
   return (
     <div className="mx-4 mb-4">
@@ -130,78 +126,51 @@ export default function QuestPanel() {
         )}
       </div>
 
-      {/* 탭 */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-3">
-        {[['pending', '미완료'], ['completed', '완료']].map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {label}{countByTab[key] > 0 ? ` (${countByTab[key]})` : ''}
-          </button>
-        ))}
-      </div>
-
       {/* 퀘스트 목록 */}
-      {filtered.length === 0 ? (
-        <p className="text-center text-gray-400 text-sm py-8">
-          {tab === 'pending' ? '이 날의 퀘스트가 없습니다' : '완료한 퀘스트가 없습니다'}
-        </p>
+      {sorted.length === 0 ? (
+        <p className="text-center text-gray-400 text-sm py-6">이 날의 퀘스트가 없습니다</p>
       ) : (
         <div className="space-y-1.5">
-          {filtered.map(quest => {
+          {sorted.map(quest => {
+            const done = quest.status === 'completed';
             return (
-              <div key={quest.id} className="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <p className={`text-sm font-medium text-gray-800 flex-1 min-w-0 truncate${tab === 'completed' ? ' line-through text-gray-400' : ''}`}>
-                    {quest.title}
-                  </p>
-                  <span className="text-xs text-gray-400 shrink-0">{DIFF_LABELS[quest.difficulty]}</span>
-                  <span className="text-xs font-bold text-yellow-600 shrink-0">🪙 {quest.coin}</span>
-                </div>
-                <div className="flex gap-1.5">
-                  {tab === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => openEdit(quest)}
-                        className="flex-1 min-h-[32px] rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => handleComplete(quest)}
-                        className="flex-1 min-h-[32px] rounded-lg bg-indigo-500 text-white text-xs font-medium hover:bg-indigo-600 transition-colors"
-                      >
-                        ✓ 완료
-                      </button>
-                    </>
-                  )}
-                  {tab === 'completed' && (
-                    <>
-                      <button
-                        onClick={() => openEdit(quest)}
-                        className="flex-1 min-h-[32px] rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => handleUndo(quest)}
-                        className="flex-1 min-h-[32px] rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
-                      >
-                        ↩ 완료 취소
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => handleDelete(quest)}
-                    className="min-h-[32px] px-3 rounded-lg bg-red-50 text-red-500 text-xs font-medium hover:bg-red-100 transition-colors"
-                  >
-                    삭제
-                  </button>
-                </div>
+              <div
+                key={quest.id}
+                className={`bg-white rounded-xl border-l-4 ${DIFF_BORDER[quest.difficulty]} shadow-sm px-3 py-2.5 flex items-center gap-2.5 transition-opacity ${done ? 'opacity-50' : ''}`}
+              >
+                {/* 체크박스 */}
+                <button
+                  onClick={() => handleToggle(quest)}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                    done
+                      ? 'bg-indigo-500 border-indigo-500 text-white'
+                      : 'border-gray-300 hover:border-indigo-400'
+                  }`}
+                >
+                  {done && <span className="text-[10px] leading-none font-bold">✓</span>}
+                </button>
+
+                {/* 제목 */}
+                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                  {quest.title}
+                </span>
+
+                {/* 코인 */}
+                <span className="text-xs font-bold text-yellow-600 shrink-0">🪙 {quest.coin}</span>
+
+                {/* 수정 / 삭제 */}
+                <button
+                  onClick={() => openEdit(quest)}
+                  className="text-xs text-gray-400 hover:text-gray-600 shrink-0 px-1 transition-colors"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(quest)}
+                  className="text-xs text-gray-400 hover:text-red-400 shrink-0 px-1 transition-colors"
+                >
+                  삭제
+                </button>
               </div>
             );
           })}
