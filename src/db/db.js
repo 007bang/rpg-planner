@@ -7,6 +7,16 @@ db.version(1).stores({
   subjects: '++id, name, color',
 });
 
+db.version(2).stores({
+  studies: '++id, eventId, date, subject, difficulty, minutes, status',
+  subjects: '++id, name, color',
+}).upgrade(tx =>
+  tx.table('studies').toCollection().modify(study => {
+    study.status = study.completed ? 'completed' : 'pending';
+    delete study.completed;
+  })
+);
+
 const DEFAULT_SUBJECTS = [
   { name: '수학', color: '#3B82F6' },
   { name: '영어', color: '#10B981' },

@@ -15,16 +15,23 @@ function studyToEvent(study, subjects) {
   const subject = subjects.find(s => s.name === study.subject);
   const color = subject?.color ?? '#6B7280';
   const abbr = getAbbr(study.subject);
+  const status = study.status ?? 'pending';
+
+  const title =
+    status === 'completed' ? `✓ ${abbr}` :
+    status === 'studying'  ? `▶ ${abbr}` :
+    abbr;
+
   return {
     id: study.eventId,
-    title: study.completed ? `✓ ${abbr}` : abbr,
+    title,
     start: study.date,
     backgroundColor: color,
-    borderColor: color,
+    borderColor: status === 'studying' ? '#ffffff' : color,
     textColor: '#ffffff',
     extendedProps: {
       studyId:     study.id,
-      completed:   !!study.completed,
+      status,
       subjectName: study.subject,
       difficulty:  study.difficulty,
       minutes:     study.minutes,
@@ -35,7 +42,7 @@ function studyToEvent(study, subjects) {
 }
 
 const MODAL_CLOSED = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
-const POPUP_CLOSED = { open: false, eventId: null, extendedProps: null, position: null };
+const POPUP_CLOSED = { open: false, extendedProps: null, position: null };
 
 export default function StudyCalendar() {
   const subjects = useSubjects() ?? [];
@@ -59,10 +66,9 @@ export default function StudyCalendar() {
   const handleEventClick = useCallback((arg) => {
     const { clientX, clientY } = arg.jsEvent;
     const x = Math.min(clientX + 12, window.innerWidth - 232);
-    const y = Math.min(Math.max(clientY - 20, 10), window.innerHeight - 220);
+    const y = Math.min(Math.max(clientY - 20, 10), window.innerHeight - 300);
     setPopupState({
       open: true,
-      eventId: arg.event.id,
       extendedProps: { ...arg.event.extendedProps },
       position: { x, y },
     });
@@ -79,9 +85,9 @@ export default function StudyCalendar() {
   }, []);
 
   const renderEventContent = useCallback((eventInfo) => {
-    const { completed } = eventInfo.event.extendedProps;
+    const { status } = eventInfo.event.extendedProps;
     return (
-      <div className={`px-1 text-white text-xs font-bold truncate w-full leading-relaxed${completed ? ' opacity-50' : ''}`}>
+      <div className={`px-1 text-white text-xs font-bold truncate w-full leading-relaxed${status === 'completed' ? ' opacity-50' : ''}`}>
         {eventInfo.event.title}
       </div>
     );
@@ -98,14 +104,14 @@ export default function StudyCalendar() {
         difficulty,
         minutes,
         memo,
-        completed: false,
+        status:    'pending',
       });
     }
     setModalState(MODAL_CLOSED);
   }
 
-  async function handleComplete() {
-    await db.studies.update(popupState.extendedProps.studyId, { completed: true });
+  async function handleSetStatus(newStatus) {
+    await db.studies.update(popupState.extendedProps.studyId, { status: newStatus });
     setPopupState(POPUP_CLOSED);
   }
 
@@ -151,10 +157,9 @@ export default function StudyCalendar() {
       />
       {popupState.open && (
         <EventPopup
-          eventId={popupState.eventId}
           extendedProps={popupState.extendedProps}
           position={popupState.position}
-          onComplete={handleComplete}
+          onSetStatus={handleSetStatus}
           onDelete={handleDelete}
           onEdit={handleEdit}
           onClose={() => setPopupState(POPUP_CLOSED)}

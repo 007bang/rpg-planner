@@ -55,12 +55,12 @@ export default function WeeklyReport() {
     const today  = localDateStr();
 
     const weekAll  = studies.filter(s => s.date >= monday && s.date <= today);
-    const weekDone = weekAll.filter(s => s.completed);
+    const weekDone = weekAll.filter(s => s.status === 'completed');
 
     if (weekAll.length === 0) return { empty: true };
 
     const rate = Math.round((weekDone.length / weekAll.length) * 100);
-    const streak = calcStreak(studies.filter(s => s.completed));
+    const streak = calcStreak(studies.filter(s => s.status === 'completed'));
 
     const minsBySubject = {};
     for (const s of weekDone) {

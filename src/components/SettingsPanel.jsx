@@ -3,10 +3,11 @@ import { db } from '../db/db';
 import { useToast } from '../hooks/useToast';
 import SubjectManager from './SubjectManager';
 
+const VALID_STATUSES = ['pending', 'studying', 'completed'];
+
 function validateStudy(raw) {
   if (!raw || typeof raw !== 'object') return null;
   if (typeof raw.minutes !== 'number') return null;
-  if (typeof raw.completed !== 'boolean') return null;
 
   const out = {};
   if (typeof raw.id === 'number')   out.id         = raw.id;
@@ -14,8 +15,17 @@ function validateStudy(raw) {
   if (raw.date      !== undefined)  out.date       = String(raw.date);
   if (raw.subject   !== undefined)  out.subject    = String(raw.subject);
   if (raw.difficulty !== undefined) out.difficulty = String(raw.difficulty);
-  out.minutes   = raw.minutes;
-  out.completed = raw.completed;
+  out.minutes = raw.minutes;
+
+  // 신형(status) + 구형(completed) 백업 모두 지원
+  if (raw.status !== undefined) {
+    out.status = VALID_STATUSES.includes(raw.status) ? raw.status : 'pending';
+  } else if (raw.completed !== undefined) {
+    out.status = raw.completed ? 'completed' : 'pending';
+  } else {
+    out.status = 'pending';
+  }
+
   return out;
 }
 

@@ -12,7 +12,6 @@ function offsetDateStr(daysAgo) {
   return `${y}-${m}-${day}`;
 }
 
-// 수학 3건, 영어 3건, 국어 2건, 과학 2건
 const TEMPLATES = [
   { subject: '수학', difficulty: 'hard'   },
   { subject: '수학', difficulty: 'normal' },
@@ -40,7 +39,7 @@ export default function SeedButton() {
         difficulty: t.difficulty,
         minutes:    randInt(30, 120),
         memo:       '',
-        completed:  true,
+        status:     'completed',
       }));
       await db.studies.bulkAdd(records);
       alert('샘플 데이터 10건이 추가됐습니다');

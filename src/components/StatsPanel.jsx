@@ -86,7 +86,7 @@ const MONTHLY_OPTIONS = {
 export default function StatsPanel() {
   const allStudies = useStudies();
   const subjects   = useSubjects() ?? [];
-  const studies    = useMemo(() => allStudies?.filter(s => s.completed) ?? [], [allStudies]);
+  const studies    = useMemo(() => allStudies?.filter(s => s.status === 'completed') ?? [], [allStudies]);
 
   const barData = useMemo(() => {
     const minutesBySubject = {};
