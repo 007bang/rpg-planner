@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db } from '../db/db';
-import { useQuests, useSubjects, useCharacter } from '../hooks/useStudies';
+import { useQuests, useCharacter } from '../hooks/useStudies';
 
 const COIN_BY_DIFF = { easy: 2, normal: 5, hard: 10 };
 const DIFF_LABELS  = { easy: '쉬움', normal: '보통', hard: '어려움' };
@@ -21,11 +21,10 @@ function formatDate(dateStr) {
   return `${y}. ${Number(m)}. ${Number(d)}.`;
 }
 
-const MODAL_CLOSED = { open: false, questId: null, title: '', subject: '', difficulty: '', date: '' };
+const MODAL_CLOSED = { open: false, questId: null, title: '', difficulty: '', date: '' };
 
 export default function QuestPanel() {
   const quests     = useQuests()    ?? [];
-  const subjects   = useSubjects()  ?? [];
   const characters = useCharacter() ?? [];
 
   const [selectedDate, setSelectedDate] = useState(todayStr());
@@ -49,19 +48,19 @@ export default function QuestPanel() {
   }
 
   function openEdit(quest) {
-    setModal({ open: true, questId: quest.id, title: quest.title, subject: quest.subject, difficulty: quest.difficulty, date: quest.date });
+    setModal({ open: true, questId: quest.id, title: quest.title, difficulty: quest.difficulty, date: quest.date });
   }
 
   async function handleSave() {
-    if (!modal.title.trim() || !modal.subject || !modal.difficulty || !modal.date) return;
+    if (!modal.title.trim() || !modal.difficulty || !modal.date) return;
     const coin = COIN_BY_DIFF[modal.difficulty];
     if (modal.questId) {
       await db.quests.update(modal.questId, {
-        title: modal.title.trim(), subject: modal.subject, difficulty: modal.difficulty, coin, date: modal.date,
+        title: modal.title.trim(), difficulty: modal.difficulty, coin, date: modal.date,
       });
     } else {
       await db.quests.add({
-        title: modal.title.trim(), subject: modal.subject, difficulty: modal.difficulty, coin, date: modal.date, status: 'pending',
+        title: modal.title.trim(), difficulty: modal.difficulty, coin, date: modal.date, status: 'pending',
       });
     }
     setModal(MODAL_CLOSED);
@@ -154,19 +153,12 @@ export default function QuestPanel() {
       ) : (
         <div className="space-y-2">
           {filtered.map(quest => {
-            const subjectColor = subjects.find(s => s.name === quest.subject)?.color ?? '#6B7280';
             return (
               <div key={quest.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
                 <p className={`font-medium text-gray-800 mb-1.5${tab === 'completed' ? ' line-through text-gray-400' : ''}`}>
                   {quest.title}
                 </p>
                 <div className="flex items-center gap-2 mb-3">
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full text-white"
-                    style={{ backgroundColor: subjectColor }}
-                  >
-                    {quest.subject}
-                  </span>
                   <span className="text-xs text-gray-400">{DIFF_LABELS[quest.difficulty]}</span>
                   <span className="text-xs font-bold text-yellow-600">🪙 {quest.coin}</span>
                 </div>
@@ -253,20 +245,6 @@ export default function QuestPanel() {
               </label>
 
               <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                과목
-                <select
-                  value={modal.subject}
-                  onChange={e => setModal(prev => ({ ...prev, subject: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  <option value="">선택하세요</option>
-                  {subjects.map(s => (
-                    <option key={s.id} value={s.name}>{s.name}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
                 난이도
                 <select
                   value={modal.difficulty}
@@ -296,7 +274,7 @@ export default function QuestPanel() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!modal.title.trim() || !modal.subject || !modal.difficulty || !modal.date}
+                  disabled={!modal.title.trim() || !modal.difficulty || !modal.date}
                   className="flex-1 min-h-[44px] rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                 >
                   {isEdit ? '저장' : '추가'}
