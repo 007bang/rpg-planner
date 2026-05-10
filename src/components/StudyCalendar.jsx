@@ -210,6 +210,12 @@ export default function StudyCalendar() {
     );
   }, []);
 
+  const handleEventDidMount = useCallback((info) => {
+    if (info.event.extendedProps.type === 'exam') {
+      info.el.style.borderWidth = '2px';
+    }
+  }, []);
+
   const dayCellContent = useCallback((arg) => {
     const dow = arg.date.getDay();
     const dateStr = [
@@ -301,6 +307,7 @@ export default function StudyCalendar() {
           eventClick={handleEventClick}
           eventDrop={handleEventDrop}
           eventContent={renderEventContent}
+          eventDidMount={handleEventDidMount}
           dayCellContent={dayCellContent}
           height="auto"
         />
