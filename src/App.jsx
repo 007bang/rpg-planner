@@ -4,6 +4,7 @@ import StatusPanel from './components/StatusPanel';
 import StudyCalendar from './components/StudyCalendar';
 import StatsPanel from './components/StatsPanel';
 import SettingsPanel from './components/SettingsPanel';
+import InfoPanel from './components/InfoPanel';
 import SeedButton from './components/SeedButton';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
       <StudyCalendar />
       <StatsPanel />
       <SettingsPanel />
+      <InfoPanel />
       <SeedButton />
     </div>
   );
