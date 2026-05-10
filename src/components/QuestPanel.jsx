@@ -69,17 +69,17 @@ export default function QuestPanel() {
 
   async function handleToggle(quest) {
     if (!character) return;
-    if (quest.status === 'completed') {
-      await db.transaction('rw', db.quests, db.characters, async () => {
+    await db.transaction('rw', db.quests, db.characters, async () => {
+      const char = await db.characters.get(character.id);
+      const currentCoin = char?.coin ?? 0;
+      if (quest.status === 'completed') {
         await db.quests.update(quest.id, { status: 'pending' });
-        await db.characters.update(character.id, { coin: Math.max(0, (character.coin ?? 0) - quest.coin) });
-      });
-    } else {
-      await db.transaction('rw', db.quests, db.characters, async () => {
+        await db.characters.update(character.id, { coin: Math.max(0, currentCoin - quest.coin) });
+      } else {
         await db.quests.update(quest.id, { status: 'completed' });
-        await db.characters.update(character.id, { coin: (character.coin ?? 0) + quest.coin });
-      });
-    }
+        await db.characters.update(character.id, { coin: currentCoin + quest.coin });
+      }
+    });
   }
 
   async function handleDelete(quest) {
