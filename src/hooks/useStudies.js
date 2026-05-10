@@ -8,3 +8,7 @@ export function useStudies() {
 export function useSubjects() {
   return useLiveQuery(() => db.subjects.toArray(), []);
 }
+
+export function useExams() {
+  return useLiveQuery(() => db.exams.toArray(), []);
+}

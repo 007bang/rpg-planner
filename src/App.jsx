@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { initDB } from './db/db';
 import StatusPanel from './components/StatusPanel';
+import DdayBanner from './components/DdayBanner';
 import StudyCalendar from './components/StudyCalendar';
 import StatsPanel from './components/StatsPanel';
 import SettingsPanel from './components/SettingsPanel';
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <div className="max-w-2xl mx-auto pb-8">
       <StatusPanel />
+      <DdayBanner />
       <StudyCalendar />
       <StatsPanel />
       <SettingsPanel />

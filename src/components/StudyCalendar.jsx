@@ -1,12 +1,14 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import koLocale from '@fullcalendar/core/locales/ko';
 import { db } from '../db/db';
-import { useStudies, useSubjects } from '../hooks/useStudies';
+import { useStudies, useSubjects, useExams } from '../hooks/useStudies';
 import AddStudyModal from './AddStudyModal';
 import EventPopup from './EventPopup';
+import AddExamModal from './AddExamModal';
+import ExamPopup from './ExamPopup';
 
 // 2025~2026 한국 법정공휴일
 const HOLIDAYS = new Set([
@@ -76,6 +78,7 @@ function studyToEvent(study, subjects) {
     borderColor: status === 'studying' ? '#ffffff' : color,
     textColor: '#ffffff',
     extendedProps: {
+      type:        'study',
       studyId:     study.id,
       status,
       subjectName: study.subject,
@@ -87,22 +90,75 @@ function studyToEvent(study, subjects) {
   };
 }
 
-const MODAL_CLOSED = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
-const POPUP_CLOSED = { open: false, extendedProps: null, position: null };
+function examToEvent(exam) {
+  return {
+    id: `exam-${exam.id}`,
+    title: `📝 ${exam.subject}`,
+    start: exam.date,
+    backgroundColor: '#111827',
+    borderColor: '#111827',
+    textColor: '#ffffff',
+    editable: false,
+    extendedProps: {
+      type:    'exam',
+      examId:  exam.id,
+      subject: exam.subject,
+      range:   exam.range ?? '',
+      date:    exam.date,
+    },
+  };
+}
+
+const MODAL_CLOSED      = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
+const POPUP_CLOSED      = { open: false, extendedProps: null, position: null };
+const EXAM_MODAL_CLOSED = { open: false, date: '', key: 0 };
+const EXAM_POPUP_CLOSED = { open: false, extendedProps: null, position: null };
 
 export default function StudyCalendar() {
   const subjects = useSubjects() ?? [];
   const studies  = useStudies()  ?? [];
+  const exams    = useExams()    ?? [];
 
   const fcEvents = useMemo(
-    () => studies.map(s => studyToEvent(s, subjects)),
-    [studies, subjects],
+    () => [
+      ...studies.map(s => studyToEvent(s, subjects)),
+      ...exams.map(e => examToEvent(e)),
+    ],
+    [studies, subjects, exams],
   );
 
-  const [modalState, setModalState] = useState(MODAL_CLOSED);
-  const [popupState, setPopupState] = useState(POPUP_CLOSED);
+  const [modalState,     setModalState]     = useState(MODAL_CLOSED);
+  const [popupState,     setPopupState]     = useState(POPUP_CLOSED);
+  const [examModalState, setExamModalState] = useState(EXAM_MODAL_CLOSED);
+  const [examPopupState, setExamPopupState] = useState(EXAM_POPUP_CLOSED);
+
+  const longPressRef = useRef({ timer: null, fired: false });
+
+  function handleWrapperPointerDown(e) {
+    if (e.target.closest('.fc-event')) return;
+    const dayEl = e.target.closest('[data-date]');
+    if (!dayEl) return;
+    const dateStr = dayEl.dataset.date;
+    longPressRef.current.fired = false;
+    longPressRef.current.timer = setTimeout(() => {
+      longPressRef.current.fired = true;
+      setExamModalState(prev => ({ open: true, date: dateStr, key: prev.key + 1 }));
+    }, 600);
+  }
+
+  function handleWrapperPointerUp() {
+    clearTimeout(longPressRef.current.timer);
+  }
+
+  function handleWrapperPointerMove() {
+    clearTimeout(longPressRef.current.timer);
+  }
 
   const handleDateClick = useCallback((arg) => {
+    if (longPressRef.current.fired) {
+      longPressRef.current.fired = false;
+      return;
+    }
     setModalState(prev => ({
       open: true, date: arg.dateStr, key: prev.key + 1,
       editStudyId: null, initialValues: null,
@@ -113,11 +169,20 @@ export default function StudyCalendar() {
     const { clientX, clientY } = arg.jsEvent;
     const x = Math.min(clientX + 12, window.innerWidth - 232);
     const y = Math.min(Math.max(clientY - 20, 10), window.innerHeight - 300);
-    setPopupState({
-      open: true,
-      extendedProps: { ...arg.event.extendedProps },
-      position: { x, y },
-    });
+
+    if (arg.event.extendedProps.type === 'exam') {
+      setExamPopupState({
+        open: true,
+        extendedProps: { ...arg.event.extendedProps },
+        position: { x, y },
+      });
+    } else {
+      setPopupState({
+        open: true,
+        extendedProps: { ...arg.event.extendedProps },
+        position: { x, y },
+      });
+    }
   }, []);
 
   const handleEventDrop = useCallback(async (info) => {
@@ -131,16 +196,17 @@ export default function StudyCalendar() {
   }, []);
 
   const renderEventContent = useCallback((eventInfo) => {
-    const { status } = eventInfo.event.extendedProps;
+    const { status, type } = eventInfo.event.extendedProps;
+    const faded = type !== 'exam' && status === 'completed';
     return (
-      <div className={`px-1 text-white text-xs font-bold truncate w-full leading-relaxed${status === 'completed' ? ' opacity-50' : ''}`}>
+      <div className={`px-1 text-white text-xs font-bold truncate w-full leading-relaxed${faded ? ' opacity-50' : ''}`}>
         {eventInfo.event.title}
       </div>
     );
   }, []);
 
   const dayCellContent = useCallback((arg) => {
-    const dow = arg.date.getDay(); // 0=일, 6=토
+    const dow = arg.date.getDay();
     const dateStr = [
       arg.date.getFullYear(),
       String(arg.date.getMonth() + 1).padStart(2, '0'),
@@ -195,21 +261,45 @@ export default function StudyCalendar() {
     }));
   }
 
+  async function handleExamSave({ subject, date, range }) {
+    await db.exams.add({ subject, date, range });
+    setExamModalState(EXAM_MODAL_CLOSED);
+  }
+
+  async function handleExamDelete() {
+    await db.exams.delete(examPopupState.extendedProps.examId);
+    setExamPopupState(EXAM_POPUP_CLOSED);
+  }
+
   return (
     <div className="p-4">
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        locale={koLocale}
-        events={fcEvents}
-        editable={true}
-        dateClick={handleDateClick}
-        eventClick={handleEventClick}
-        eventDrop={handleEventDrop}
-        eventContent={renderEventContent}
-        dayCellContent={dayCellContent}
-        height="auto"
-      />
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => setExamModalState(prev => ({ open: true, date: '', key: prev.key + 1 }))}
+          className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
+        >
+          📝 시험 추가
+        </button>
+      </div>
+      <div
+        onPointerDown={handleWrapperPointerDown}
+        onPointerUp={handleWrapperPointerUp}
+        onPointerMove={handleWrapperPointerMove}
+      >
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          locale={koLocale}
+          events={fcEvents}
+          editable={true}
+          dateClick={handleDateClick}
+          eventClick={handleEventClick}
+          eventDrop={handleEventDrop}
+          eventContent={renderEventContent}
+          dayCellContent={dayCellContent}
+          height="auto"
+        />
+      </div>
       <AddStudyModal
         key={modalState.key}
         open={modalState.open}
@@ -227,6 +317,22 @@ export default function StudyCalendar() {
           onDelete={handleDelete}
           onEdit={handleEdit}
           onClose={() => setPopupState(POPUP_CLOSED)}
+        />
+      )}
+      <AddExamModal
+        key={`exam-${examModalState.key}`}
+        open={examModalState.open}
+        date={examModalState.date}
+        subjects={subjects}
+        onSave={handleExamSave}
+        onClose={() => setExamModalState(EXAM_MODAL_CLOSED)}
+      />
+      {examPopupState.open && (
+        <ExamPopup
+          extendedProps={examPopupState.extendedProps}
+          position={examPopupState.position}
+          onDelete={handleExamDelete}
+          onClose={() => setExamPopupState(EXAM_POPUP_CLOSED)}
         />
       )}
     </div>
