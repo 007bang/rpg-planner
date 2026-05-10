@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 const DIFFICULTY_LABEL = { easy: '쉬움', normal: '보통', hard: '어려움' };
 
-export default function EventPopup({ eventId, extendedProps, position, onComplete, onDelete, onClose }) {
+export default function EventPopup({ eventId, extendedProps, position, onComplete, onDelete, onEdit, onClose }) {
   const ref = useRef(null);
   const { completed, subjectName, difficulty, minutes } = extendedProps;
 
@@ -34,6 +34,12 @@ export default function EventPopup({ eventId, extendedProps, position, onComplet
       ) : (
         <p className="text-center text-green-600 font-semibold mb-2">✓ 완료됨</p>
       )}
+      <button
+        onClick={onEdit}
+        className="w-full min-h-[44px] rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors mb-2"
+      >
+        수정
+      </button>
       <button
         onClick={onDelete}
         className="w-full min-h-[44px] rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"

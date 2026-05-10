@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
+import { useStudies } from '../hooks/useStudies';
 
 function localDateStr(date = new Date()) {
   const y = date.getFullYear();
@@ -9,16 +8,14 @@ function localDateStr(date = new Date()) {
   return `${y}-${m}-${d}`;
 }
 
-// 이번 주 월요일 날짜 문자열
 function getMondayStr() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
-  const dow = d.getDay(); // 0=일, 1=월 ... 6=토
+  const dow = d.getDay();
   d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
   return localDateStr(d);
 }
 
-// 완료 기록 기준 오늘부터 역방향 연속 일수
 function calcStreak(completedStudies) {
   const dateSet = new Set(completedStudies.map(s => s.date));
   if (dateSet.size === 0) return 0;
@@ -49,7 +46,7 @@ function StatCard({ value, label, sub, valueClass = 'text-indigo-600' }) {
 }
 
 export default function WeeklyReport() {
-  const studies = useLiveQuery(() => db.studies.toArray(), []);
+  const studies = useStudies();
 
   const stats = useMemo(() => {
     if (!studies) return null;
@@ -62,13 +59,9 @@ export default function WeeklyReport() {
 
     if (weekAll.length === 0) return { empty: true };
 
-    // 1. 완료율
     const rate = Math.round((weekDone.length / weekAll.length) * 100);
-
-    // 2. 연속 학습일 (전체 완료 기록 기준)
     const streak = calcStreak(studies.filter(s => s.completed));
 
-    // 3. 약한 과목 — 이번 주 완료 기준 최소 minutes
     const minsBySubject = {};
     for (const s of weekDone) {
       minsBySubject[s.subject] = (minsBySubject[s.subject] ?? 0) + s.minutes;

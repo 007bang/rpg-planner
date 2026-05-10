@@ -1,43 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { db } from '../db/db';
-
-// ── 토스트 ──────────────────────────────────────────────────────────────────
-
-function useToast() {
-  const [msg, setMsg] = useState(null);
-  const timer = useRef(null);
-
-  function show(text) {
-    setMsg(text);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setMsg(null), 3000);
-  }
-
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  return { msg, show };
-}
-
-// ── 검증 ────────────────────────────────────────────────────────────────────
+import { useToast } from '../hooks/useToast';
+import SubjectManager from './SubjectManager';
 
 function validateStudy(raw) {
   if (!raw || typeof raw !== 'object') return null;
   if (typeof raw.minutes !== 'number') return null;
   if (typeof raw.completed !== 'boolean') return null;
 
-  // 허용 필드만 추출
   const out = {};
-  if (typeof raw.id === 'number')       out.id         = raw.id;
-  if (raw.eventId   !== undefined)      out.eventId    = String(raw.eventId);
-  if (raw.date      !== undefined)      out.date       = String(raw.date);
-  if (raw.subject   !== undefined)      out.subject    = String(raw.subject);
-  if (raw.difficulty !== undefined)     out.difficulty = String(raw.difficulty);
+  if (typeof raw.id === 'number')   out.id         = raw.id;
+  if (raw.eventId   !== undefined)  out.eventId    = String(raw.eventId);
+  if (raw.date      !== undefined)  out.date       = String(raw.date);
+  if (raw.subject   !== undefined)  out.subject    = String(raw.subject);
+  if (raw.difficulty !== undefined) out.difficulty = String(raw.difficulty);
   out.minutes   = raw.minutes;
   out.completed = raw.completed;
   return out;
 }
-
-// ── 컴포넌트 ────────────────────────────────────────────────────────────────
 
 export default function SettingsPanel() {
   const [exporting, setExporting] = useState(false);
@@ -45,7 +25,6 @@ export default function SettingsPanel() {
   const fileInputRef = useRef(null);
   const { msg: toastMsg, show: showToast } = useToast();
 
-  // 내보내기
   async function handleExport() {
     setExporting(true);
     try {
@@ -69,7 +48,6 @@ export default function SettingsPanel() {
     }
   }
 
-  // 가져오기 — 파일 선택
   function handleFileChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -120,8 +98,19 @@ export default function SettingsPanel() {
     <div className="mx-4 mb-4">
       <h2 className="text-lg font-bold text-gray-800 px-1 mb-3">설정</h2>
 
+      {/* 과목 관리 */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <p className="font-medium text-gray-800">과목 관리</p>
+          <p className="text-xs text-gray-400 mt-0.5">과목을 추가·수정·삭제합니다 (기록이 있는 과목은 삭제 불가)</p>
+        </div>
+        <div className="px-5 py-2">
+          <SubjectManager />
+        </div>
+      </div>
+
+      {/* 데이터 관리 */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
-        {/* 내보내기 */}
         <div className="flex items-center justify-between px-5 py-4">
           <div>
             <p className="font-medium text-gray-800">데이터 내보내기</p>
@@ -137,7 +126,6 @@ export default function SettingsPanel() {
           </button>
         </div>
 
-        {/* 가져오기 */}
         <div className="flex items-center justify-between px-5 py-4">
           <div>
             <p className="font-medium text-gray-800">데이터 가져오기</p>
@@ -161,7 +149,6 @@ export default function SettingsPanel() {
         </div>
       </div>
 
-      {/* 토스트 */}
       {toastMsg && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none whitespace-nowrap">
           {toastMsg}

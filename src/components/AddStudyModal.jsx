@@ -6,11 +6,12 @@ const DIFFICULTIES = [
   { value: 'hard', label: '어려움' },
 ];
 
-export default function AddStudyModal({ open, date, subjects, onSave, onClose }) {
-  const [subject, setSubject] = useState('');
-  const [difficulty, setDifficulty] = useState('normal');
-  const [minutes, setMinutes] = useState(60);
-  const [memo, setMemo] = useState('');
+export default function AddStudyModal({ open, date, subjects, onSave, onClose, initialValues }) {
+  const isEdit = !!initialValues;
+  const [subject, setSubject] = useState(initialValues?.subject ?? '');
+  const [difficulty, setDifficulty] = useState(initialValues?.difficulty ?? 'normal');
+  const [minutes, setMinutes] = useState(initialValues?.minutes ?? 60);
+  const [memo, setMemo] = useState(initialValues?.memo ?? '');
 
   if (!open) return null;
 
@@ -18,10 +19,6 @@ export default function AddStudyModal({ open, date, subjects, onSave, onClose })
     e.preventDefault();
     if (!subject) return;
     onSave({ subject, difficulty, minutes: Number(minutes), memo });
-    setSubject('');
-    setDifficulty('normal');
-    setMinutes(60);
-    setMemo('');
   }
 
   return (
@@ -33,7 +30,9 @@ export default function AddStudyModal({ open, date, subjects, onSave, onClose })
         className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold mb-4 text-gray-800">{date} 공부 추가</h2>
+        <h2 className="text-lg font-bold mb-4 text-gray-800">
+          {date} 공부 {isEdit ? '수정' : '추가'}
+        </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
             과목
@@ -99,7 +98,7 @@ export default function AddStudyModal({ open, date, subjects, onSave, onClose })
               type="submit"
               className="flex-1 min-h-[44px] rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
             >
-              저장
+              {isEdit ? '수정' : '저장'}
             </button>
           </div>
         </form>

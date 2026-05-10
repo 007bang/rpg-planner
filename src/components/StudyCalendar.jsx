@@ -3,8 +3,8 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import koLocale from '@fullcalendar/core/locales/ko';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
+import { useStudies, useSubjects } from '../hooks/useStudies';
 import AddStudyModal from './AddStudyModal';
 import EventPopup from './EventPopup';
 
@@ -23,33 +23,37 @@ function studyToEvent(study, subjects) {
     borderColor: color,
     textColor: '#ffffff',
     extendedProps: {
-      studyId: study.id,
-      completed: !!study.completed,
+      studyId:     study.id,
+      completed:   !!study.completed,
       subjectName: study.subject,
-      difficulty: study.difficulty,
-      minutes: study.minutes,
+      difficulty:  study.difficulty,
+      minutes:     study.minutes,
+      memo:        study.memo ?? '',
+      date:        study.date,
     },
   };
 }
 
+const MODAL_CLOSED = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
 const POPUP_CLOSED = { open: false, eventId: null, extendedProps: null, position: null };
 
 export default function StudyCalendar() {
-  // useLiveQuery로 DB 변경(저장·완료·삭제·가져오기·샘플 추가)에 자동 반응
-  const subjects = useLiveQuery(() => db.subjects.toArray(), []) ?? [];
-  const studies  = useLiveQuery(() => db.studies.toArray(),  []) ?? [];
+  const subjects = useSubjects() ?? [];
+  const studies  = useStudies()  ?? [];
 
   const fcEvents = useMemo(
     () => studies.map(s => studyToEvent(s, subjects)),
     [studies, subjects],
   );
 
-  // key를 포함해서 날짜 클릭마다 AddStudyModal을 remount → 이전 입력값 초기화
-  const [modalState, setModalState] = useState({ open: false, date: '', key: 0 });
+  const [modalState, setModalState] = useState(MODAL_CLOSED);
   const [popupState, setPopupState] = useState(POPUP_CLOSED);
 
   const handleDateClick = useCallback((arg) => {
-    setModalState(prev => ({ open: true, date: arg.dateStr, key: prev.key + 1 }));
+    setModalState(prev => ({
+      open: true, date: arg.dateStr, key: prev.key + 1,
+      editStudyId: null, initialValues: null,
+    }));
   }, []);
 
   const handleEventClick = useCallback((arg) => {
@@ -74,16 +78,20 @@ export default function StudyCalendar() {
   }, []);
 
   async function handleSave({ subject, difficulty, minutes, memo }) {
-    await db.studies.add({
-      eventId:    String(Date.now()),
-      date:       modalState.date,
-      subject,
-      difficulty,
-      minutes,
-      memo,
-      completed:  false,
-    });
-    setModalState(prev => ({ ...prev, open: false }));
+    if (modalState.editStudyId) {
+      await db.studies.update(modalState.editStudyId, { subject, difficulty, minutes, memo });
+    } else {
+      await db.studies.add({
+        eventId:   String(Date.now()),
+        date:      modalState.date,
+        subject,
+        difficulty,
+        minutes,
+        memo,
+        completed: false,
+      });
+    }
+    setModalState(MODAL_CLOSED);
   }
 
   async function handleComplete() {
@@ -94,6 +102,18 @@ export default function StudyCalendar() {
   async function handleDelete() {
     await db.studies.delete(popupState.extendedProps.studyId);
     setPopupState(POPUP_CLOSED);
+  }
+
+  function handleEdit() {
+    const { studyId, subjectName, difficulty, minutes, memo, date } = popupState.extendedProps;
+    setPopupState(POPUP_CLOSED);
+    setModalState(prev => ({
+      open: true,
+      date,
+      key: prev.key + 1,
+      editStudyId: studyId,
+      initialValues: { subject: subjectName, difficulty, minutes, memo },
+    }));
   }
 
   return (
@@ -114,7 +134,8 @@ export default function StudyCalendar() {
         date={modalState.date}
         subjects={subjects}
         onSave={handleSave}
-        onClose={() => setModalState(prev => ({ ...prev, open: false }))}
+        onClose={() => setModalState(MODAL_CLOSED)}
+        initialValues={modalState.initialValues}
       />
       {popupState.open && (
         <EventPopup
@@ -123,6 +144,7 @@ export default function StudyCalendar() {
           position={popupState.position}
           onComplete={handleComplete}
           onDelete={handleDelete}
+          onEdit={handleEdit}
           onClose={() => setPopupState(POPUP_CLOSED)}
         />
       )}

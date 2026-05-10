@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { Bar, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { db } from '../db/db';
+import { useStudies, useSubjects } from '../hooks/useStudies';
 import WeeklyReport from './WeeklyReport';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
@@ -60,15 +59,9 @@ const LINE_OPTIONS = {
 };
 
 export default function StatsPanel() {
-  const result = useLiveQuery(async () => {
-    const [allStudies, subjects] = await Promise.all([
-      db.studies.toArray(),
-      db.subjects.toArray(),
-    ]);
-    return { studies: allStudies.filter(s => s.completed), subjects };
-  }, []);
-
-  const { studies = [], subjects = [] } = result ?? {};
+  const allStudies = useStudies();
+  const subjects   = useSubjects() ?? [];
+  const studies    = useMemo(() => allStudies?.filter(s => s.completed) ?? [], [allStudies]);
 
   const barData = useMemo(() => {
     const minutesBySubject = {};
@@ -113,7 +106,7 @@ export default function StatsPanel() {
     };
   }, [studies]);
 
-  if (result === undefined) return null;
+  if (allStudies === undefined) return null;
 
   return (
     <div className="mx-4 my-4 space-y-4">

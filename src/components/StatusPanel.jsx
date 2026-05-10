@@ -1,5 +1,4 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
+import { useStudies } from '../hooks/useStudies';
 import { computeStats } from '../utils/xp';
 
 const BADGE_LIST = [
@@ -10,7 +9,7 @@ const BADGE_LIST = [
 ];
 
 export default function StatusPanel() {
-  const studies = useLiveQuery(() => db.studies.toArray(), []);
+  const studies = useStudies();
 
   if (studies === undefined) return null;
 
@@ -58,7 +57,6 @@ export default function StatusPanel() {
             <span className="text-yellow-400 text-lg">{todayXP}</span>
             <span className="text-indigo-300 text-sm"> / 400</span>
           </p>
-          {/* 오늘 진행 미니바 */}
           <div className="mt-1.5 h-1 bg-white/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-yellow-400 rounded-full transition-all duration-500"
