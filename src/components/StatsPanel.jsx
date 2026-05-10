@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Bar, Line } from 'react-chartjs-2';
+import { Bar, Line, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,6 +7,7 @@ import {
   BarElement,
   LineElement,
   PointElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -14,7 +15,12 @@ import {
 import { useStudies, useSubjects } from '../hooks/useStudies';
 import WeeklyReport from './WeeklyReport';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale, LinearScale,
+  BarElement, LineElement, PointElement,
+  ArcElement,
+  Title, Tooltip, Legend,
+);
 
 const toHours = (minutes) => Math.round(minutes / 6) / 10;
 
@@ -31,21 +37,20 @@ function monthStr(date = new Date()) {
   return `${y}-${m}`;
 }
 
-const BAR_OPTIONS = {
-  indexAxis: 'y',
+const PIE_OPTIONS = {
   responsive: true,
   plugins: {
-    legend: { display: false },
-    title: { display: true, text: '과목별 총 공부시간', font: { size: 14, weight: 'bold' } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x}시간` } },
-  },
-  scales: {
-    x: {
-      beginAtZero: true,
-      ticks: { callback: v => `${v}시간` },
-      grid: { color: 'rgba(0,0,0,0.05)' },
+    legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } },
+    title: { display: true, text: '과목별 공부 비율', font: { size: 14, weight: 'bold' } },
+    tooltip: {
+      callbacks: {
+        label: ctx => {
+          const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+          const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+          return ` ${ctx.label}: ${toHours(ctx.parsed)}시간 (${pct}%)`;
+        },
+      },
     },
-    y: { grid: { display: false } },
   },
 };
 
@@ -88,7 +93,7 @@ export default function StatsPanel() {
   const subjects   = useSubjects() ?? [];
   const studies    = useMemo(() => allStudies?.filter(s => s.status === 'completed') ?? [], [allStudies]);
 
-  const barData = useMemo(() => {
+  const pieData = useMemo(() => {
     const minutesBySubject = {};
     for (const s of studies) {
       minutesBySubject[s.subject] = (minutesBySubject[s.subject] ?? 0) + s.minutes;
@@ -97,10 +102,10 @@ export default function StatsPanel() {
     return {
       labels: active.map(s => s.name),
       datasets: [{
-        data: active.map(s => toHours(minutesBySubject[s.name])),
+        data: active.map(s => minutesBySubject[s.name]),
         backgroundColor: active.map(s => s.color),
-        borderRadius: 6,
-        borderSkipped: false,
+        borderWidth: 2,
+        borderColor: '#fff',
       }],
     };
   }, [studies, subjects]);
@@ -181,7 +186,7 @@ export default function StatsPanel() {
             <Line data={lineData} options={LINE_OPTIONS} />
           </div>
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <Bar data={barData} options={BAR_OPTIONS} />
+            <Pie data={pieData} options={PIE_OPTIONS} />
           </div>
         </>
       )}

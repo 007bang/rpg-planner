@@ -5,7 +5,6 @@ import StudyCalendar from './components/StudyCalendar';
 import StatsPanel from './components/StatsPanel';
 import SettingsPanel from './components/SettingsPanel';
 import InfoPanel from './components/InfoPanel';
-import SeedButton from './components/SeedButton';
 
 export default function App() {
   useEffect(() => {
@@ -19,7 +18,6 @@ export default function App() {
       <StatsPanel />
       <SettingsPanel />
       <InfoPanel />
-      <SeedButton />
     </div>
   );
 }
