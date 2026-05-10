@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function ExamPopup({ extendedProps, position, onDelete, onClose }) {
+export default function ExamPopup({ extendedProps, position, onDelete, onEdit, onClose }) {
   const ref = useRef(null);
   const { subject, range, date } = extendedProps;
 
@@ -30,12 +30,20 @@ export default function ExamPopup({ extendedProps, position, onDelete, onClose }
       ) : (
         <div className="mb-3" />
       )}
-      <button
-        onClick={onDelete}
-        className="w-full min-h-[44px] rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
-      >
-        삭제
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={onEdit}
+          className="flex-1 min-h-[44px] rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
+        >
+          수정
+        </button>
+        <button
+          onClick={onDelete}
+          className="flex-1 min-h-[44px] rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+        >
+          삭제
+        </button>
+      </div>
     </div>
   );
 }

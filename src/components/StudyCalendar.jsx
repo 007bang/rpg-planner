@@ -112,7 +112,7 @@ function examToEvent(exam, subjects) {
 
 const MODAL_CLOSED      = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
 const POPUP_CLOSED      = { open: false, extendedProps: null, position: null };
-const EXAM_MODAL_CLOSED = { open: false, date: '', key: 0 };
+const EXAM_MODAL_CLOSED = { open: false, date: '', key: 0, examId: null, initialValues: null };
 const EXAM_POPUP_CLOSED = { open: false, extendedProps: null, position: null };
 
 export default function StudyCalendar() {
@@ -273,8 +273,24 @@ export default function StudyCalendar() {
   }
 
   async function handleExamSave({ subject, date, range }) {
-    await db.exams.add({ subject, date, range });
+    if (examModalState.examId) {
+      await db.exams.update(examModalState.examId, { subject, date, range });
+    } else {
+      await db.exams.add({ subject, date, range });
+    }
     setExamModalState(EXAM_MODAL_CLOSED);
+  }
+
+  function handleExamEdit() {
+    const { examId, subject, range, date } = examPopupState.extendedProps;
+    setExamPopupState(EXAM_POPUP_CLOSED);
+    setExamModalState(prev => ({
+      open: true,
+      date,
+      key: prev.key + 1,
+      examId,
+      initialValues: { subject, date, range },
+    }));
   }
 
   async function handleExamDelete() {
@@ -338,12 +354,14 @@ export default function StudyCalendar() {
         subjects={subjects}
         onSave={handleExamSave}
         onClose={() => setExamModalState(EXAM_MODAL_CLOSED)}
+        initialValues={examModalState.initialValues}
       />
       {examPopupState.open && (
         <ExamPopup
           extendedProps={examPopupState.extendedProps}
           position={examPopupState.position}
           onDelete={handleExamDelete}
+          onEdit={handleExamEdit}
           onClose={() => setExamPopupState(EXAM_POPUP_CLOSED)}
         />
       )}
