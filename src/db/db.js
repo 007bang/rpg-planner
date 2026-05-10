@@ -1,0 +1,22 @@
+import Dexie from 'dexie';
+
+export const db = new Dexie('rpg-planner');
+
+db.version(1).stores({
+  studies: '++id, eventId, date, subject, difficulty, minutes, completed',
+  subjects: '++id, name, color',
+});
+
+const DEFAULT_SUBJECTS = [
+  { name: '수학', color: '#3B82F6' },
+  { name: '영어', color: '#10B981' },
+  { name: '국어', color: '#8B5CF6' },
+  { name: '과학', color: '#F97316' },
+];
+
+export async function initDB() {
+  const count = await db.subjects.count();
+  if (count === 0) {
+    await db.subjects.bulkAdd(DEFAULT_SUBJECTS);
+  }
+}
