@@ -1,4 +1,4 @@
-import { useStudies, useCharacter } from '../hooks/useStudies';
+import { useStudies, useCharacter, useCoin } from '../hooks/useStudies';
 import { computeStats } from '../utils/xp';
 
 const BADGE_LIST = [
@@ -18,8 +18,9 @@ function scrollToInfo() {
 export default function StatusPanel() {
   const studies    = useStudies();
   const characters = useCharacter();
+  const coin       = useCoin();
 
-  if (studies === undefined || characters === undefined) return null;
+  if (studies === undefined || characters === undefined || coin === undefined) return null;
 
   const character = characters[0] ?? null;
   const { totalXP, todayXP, streak, level, levelName, progress, remaining, badges } =
@@ -33,7 +34,7 @@ export default function StatusPanel() {
           <span className="text-xl">{JOB_ICONS[character.job]}</span>
           <span className="font-bold">{character.nickname}</span>
           <span className="text-xs text-indigo-300 ml-1">{JOB_LABELS[character.job]}</span>
-          <span className="ml-auto text-sm font-bold text-yellow-300">🪙 {character.coin ?? 0}</span>
+          <span className="ml-auto text-sm font-bold text-yellow-300">🪙 {coin}</span>
         </div>
       )}
 

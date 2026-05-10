@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db } from '../db/db';
-import { useQuests, useCharacter } from '../hooks/useStudies';
+import { useQuests } from '../hooks/useStudies';
 
 const COIN_BY_DIFF  = { easy: 2, normal: 5, hard: 10 };
 const DIFF_BORDER   = { easy: 'border-green-400', normal: 'border-blue-400', hard: 'border-red-400' };
@@ -24,14 +24,12 @@ function formatDate(dateStr) {
 const MODAL_CLOSED = { open: false, questId: null, title: '', difficulty: '', date: '' };
 
 export default function QuestPanel() {
-  const quests     = useQuests()    ?? [];
-  const characters = useCharacter() ?? [];
+  const quests = useQuests() ?? [];
 
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const [modal, setModal] = useState(MODAL_CLOSED);
 
-  const character  = characters[0] ?? null;
-  const isEdit     = !!modal.questId;
+  const isEdit = !!modal.questId;
   const coinReward = COIN_BY_DIFF[modal.difficulty] ?? 0;
 
   const today   = todayStr();
@@ -68,17 +66,8 @@ export default function QuestPanel() {
   }
 
   async function handleToggle(quest) {
-    if (!character) return;
-    await db.transaction('rw', db.quests, db.characters, async () => {
-      const char = await db.characters.get(character.id);
-      const currentCoin = char?.coin ?? 0;
-      if (quest.status === 'completed') {
-        await db.quests.update(quest.id, { status: 'pending' });
-        await db.characters.update(character.id, { coin: Math.max(0, currentCoin - quest.coin) });
-      } else {
-        await db.quests.update(quest.id, { status: 'completed' });
-        await db.characters.update(character.id, { coin: currentCoin + quest.coin });
-      }
+    await db.quests.update(quest.id, {
+      status: quest.status === 'completed' ? 'pending' : 'completed',
     });
   }
 
