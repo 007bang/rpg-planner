@@ -151,29 +151,29 @@ export default function QuestPanel() {
           {tab === 'pending' ? '이 날의 퀘스트가 없습니다' : '완료한 퀘스트가 없습니다'}
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {filtered.map(quest => {
             return (
-              <div key={quest.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
-                <p className={`font-medium text-gray-800 mb-1.5${tab === 'completed' ? ' line-through text-gray-400' : ''}`}>
-                  {quest.title}
-                </p>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs text-gray-400">{DIFF_LABELS[quest.difficulty]}</span>
-                  <span className="text-xs font-bold text-yellow-600">🪙 {quest.coin}</span>
+              <div key={quest.id} className="bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <p className={`text-sm font-medium text-gray-800 flex-1 min-w-0 truncate${tab === 'completed' ? ' line-through text-gray-400' : ''}`}>
+                    {quest.title}
+                  </p>
+                  <span className="text-xs text-gray-400 shrink-0">{DIFF_LABELS[quest.difficulty]}</span>
+                  <span className="text-xs font-bold text-yellow-600 shrink-0">🪙 {quest.coin}</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   {tab === 'pending' && (
                     <>
                       <button
                         onClick={() => openEdit(quest)}
-                        className="flex-1 min-h-[36px] rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                        className="flex-1 min-h-[32px] rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
                       >
                         수정
                       </button>
                       <button
                         onClick={() => handleComplete(quest)}
-                        className="flex-1 min-h-[36px] rounded-xl bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-600 transition-colors"
+                        className="flex-1 min-h-[32px] rounded-lg bg-indigo-500 text-white text-xs font-medium hover:bg-indigo-600 transition-colors"
                       >
                         ✓ 완료
                       </button>
@@ -183,13 +183,13 @@ export default function QuestPanel() {
                     <>
                       <button
                         onClick={() => openEdit(quest)}
-                        className="flex-1 min-h-[36px] rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                        className="flex-1 min-h-[32px] rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
                       >
                         수정
                       </button>
                       <button
                         onClick={() => handleUndo(quest)}
-                        className="flex-1 min-h-[36px] rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                        className="flex-1 min-h-[32px] rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
                       >
                         ↩ 완료 취소
                       </button>
@@ -197,7 +197,7 @@ export default function QuestPanel() {
                   )}
                   <button
                     onClick={() => handleDelete(quest)}
-                    className="min-h-[36px] px-4 rounded-xl bg-red-50 text-red-500 text-sm font-medium hover:bg-red-100 transition-colors"
+                    className="min-h-[32px] px-3 rounded-lg bg-red-50 text-red-500 text-xs font-medium hover:bg-red-100 transition-colors"
                   >
                     삭제
                   </button>
