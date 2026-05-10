@@ -28,7 +28,7 @@ export default function QuestPanel() {
   const subjects   = useSubjects()  ?? [];
   const characters = useCharacter() ?? [];
 
-  const [selectedDate, setSelectedDate] = useState(todayStr);
+  const [selectedDate, setSelectedDate] = useState(todayStr());
   const [tab,   setTab]   = useState('pending');
   const [modal, setModal] = useState(MODAL_CLOSED);
 
