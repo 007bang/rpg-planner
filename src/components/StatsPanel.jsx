@@ -16,6 +16,8 @@ import WeeklyReport from './WeeklyReport';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
+const toHours = (minutes) => Math.round(minutes / 6) / 10;
+
 function localDateStr(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -35,12 +37,12 @@ const BAR_OPTIONS = {
   plugins: {
     legend: { display: false },
     title: { display: true, text: '과목별 총 공부시간', font: { size: 14, weight: 'bold' } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x}분` } },
+    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x}시간` } },
   },
   scales: {
     x: {
       beginAtZero: true,
-      ticks: { callback: v => `${v}분` },
+      ticks: { callback: v => `${v}시간` },
       grid: { color: 'rgba(0,0,0,0.05)' },
     },
     y: { grid: { display: false } },
@@ -52,12 +54,12 @@ const LINE_OPTIONS = {
   plugins: {
     legend: { display: false },
     title: { display: true, text: '최근 7일 일별 공부시간', font: { size: 14, weight: 'bold' } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}분` } },
+    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}시간` } },
   },
   scales: {
     y: {
       beginAtZero: true,
-      ticks: { callback: v => `${v}분` },
+      ticks: { callback: v => `${v}시간` },
       grid: { color: 'rgba(0,0,0,0.05)' },
     },
     x: { grid: { display: false } },
@@ -69,12 +71,12 @@ const MONTHLY_OPTIONS = {
   plugins: {
     legend: { display: false },
     title: { display: true, text: '월별 공부시간 비교', font: { size: 14, weight: 'bold' } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}분` } },
+    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}시간` } },
   },
   scales: {
     y: {
       beginAtZero: true,
-      ticks: { callback: v => `${v}분` },
+      ticks: { callback: v => `${v}시간` },
       grid: { color: 'rgba(0,0,0,0.05)' },
     },
     x: { grid: { display: false } },
@@ -95,7 +97,7 @@ export default function StatsPanel() {
     return {
       labels: active.map(s => s.name),
       datasets: [{
-        data: active.map(s => minutesBySubject[s.name]),
+        data: active.map(s => toHours(minutesBySubject[s.name])),
         backgroundColor: active.map(s => s.color),
         borderRadius: 6,
         borderSkipped: false,
@@ -116,7 +118,7 @@ export default function StatsPanel() {
     return {
       labels: last7.map(d => d.slice(5)),
       datasets: [{
-        data: last7.map(d => minutesByDate[d] ?? 0),
+        data: last7.map(d => toHours(minutesByDate[d] ?? 0)),
         borderColor: '#6366f1',
         backgroundColor: 'rgba(99,102,241,0.08)',
         pointBackgroundColor: '#6366f1',
@@ -148,7 +150,7 @@ export default function StatsPanel() {
         return `${y.slice(2)}년 ${parseInt(mo)}월`;
       }),
       datasets: [{
-        data: last6.map(m => minutesByMonth[m] ?? 0),
+        data: last6.map(m => toHours(minutesByMonth[m] ?? 0)),
         backgroundColor: last6.map(m =>
           m === currentMonth ? '#6366f1' : 'rgba(99,102,241,0.3)'
         ),

@@ -8,9 +8,11 @@ const DIFFICULTIES = [
 
 export default function AddStudyModal({ open, date, subjects, onSave, onClose, initialValues }) {
   const isEdit = !!initialValues;
+  const initMins = initialValues?.minutes ?? 60;
   const [subject, setSubject] = useState(initialValues?.subject ?? '');
   const [difficulty, setDifficulty] = useState(initialValues?.difficulty ?? 'normal');
-  const [minutes, setMinutes] = useState(initialValues?.minutes ?? 60);
+  const [hours, setHours] = useState(Math.floor(initMins / 60));
+  const [mins, setMins] = useState(initMins % 60);
   const [memo, setMemo] = useState(initialValues?.memo ?? '');
 
   if (!open) return null;
@@ -18,7 +20,9 @@ export default function AddStudyModal({ open, date, subjects, onSave, onClose, i
   function handleSubmit(e) {
     e.preventDefault();
     if (!subject) return;
-    onSave({ subject, difficulty, minutes: Number(minutes), memo });
+    const totalMinutes = Number(hours) * 60 + Number(mins);
+    if (totalMinutes < 1) return;
+    onSave({ subject, difficulty, minutes: totalMinutes, memo });
   }
 
   return (
@@ -62,18 +66,36 @@ export default function AddStudyModal({ open, date, subjects, onSave, onClose, i
             </select>
           </label>
 
-          <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-            공부 시간 (분)
-            <input
-              type="number"
-              value={minutes}
-              onChange={e => setMinutes(e.target.value)}
-              min={1}
-              max={720}
-              required
-              className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </label>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-gray-700">공부 시간</span>
+            <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-1 flex-1">
+                <input
+                  type="number"
+                  value={hours}
+                  onChange={e => setHours(Math.max(0, Math.min(23, Number(e.target.value))))}
+                  min={0}
+                  max={23}
+                  className="w-full border rounded-lg px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <span className="text-sm text-gray-500 flex-shrink-0">시간</span>
+              </div>
+              <div className="flex items-center gap-1 flex-1">
+                <input
+                  type="number"
+                  value={mins}
+                  onChange={e => setMins(Math.max(0, Math.min(59, Number(e.target.value))))}
+                  min={0}
+                  max={59}
+                  className="w-full border rounded-lg px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <span className="text-sm text-gray-500 flex-shrink-0">분</span>
+              </div>
+            </div>
+            {Number(hours) * 60 + Number(mins) < 1 && (
+              <p className="text-xs text-red-400">최소 1분 이상 입력하세요</p>
+            )}
+          </div>
 
           <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
             메모
