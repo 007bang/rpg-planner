@@ -6,7 +6,8 @@ const COIN_BY_DIFF = { easy: 2, normal: 5, hard: 10 };
 const DIFF_LABELS  = { easy: '쉬움', normal: '보통', hard: '어려움' };
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function addDays(dateStr, n) {
