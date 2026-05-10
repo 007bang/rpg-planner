@@ -98,7 +98,6 @@ function examToEvent(exam) {
     backgroundColor: '#111827',
     borderColor: '#111827',
     textColor: '#ffffff',
-    editable: false,
     extendedProps: {
       type:    'exam',
       examId:  exam.id,
@@ -186,10 +185,14 @@ export default function StudyCalendar() {
   }, []);
 
   const handleEventDrop = useCallback(async (info) => {
-    const { studyId } = info.event.extendedProps;
+    const { type, studyId, examId } = info.event.extendedProps;
     const newDate = info.event.startStr.slice(0, 10);
     try {
-      await db.studies.update(studyId, { date: newDate });
+      if (type === 'exam') {
+        await db.exams.update(examId, { date: newDate });
+      } else {
+        await db.studies.update(studyId, { date: newDate });
+      }
     } catch {
       info.revert();
     }
