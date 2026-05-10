@@ -188,12 +188,20 @@ export default function QuestPanel() {
                     </>
                   )}
                   {tab === 'completed' && (
-                    <button
-                      onClick={() => handleUndo(quest)}
-                      className="flex-1 min-h-[36px] rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
-                    >
-                      ↩ 완료 취소
-                    </button>
+                    <>
+                      <button
+                        onClick={() => openEdit(quest)}
+                        className="flex-1 min-h-[36px] rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => handleUndo(quest)}
+                        className="flex-1 min-h-[36px] rounded-xl bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        ↩ 완료 취소
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => handleDelete(quest)}
