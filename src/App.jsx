@@ -58,7 +58,7 @@ export default function App() {
   return (
     <>
       <NavBar timerElapsed={elapsed} timerRunning={isRunning} />
-      <div className="max-w-2xl mx-auto pb-16">
+      <div className="max-w-2xl mx-auto pb-16 flex flex-col gap-8">
         <div id="section-status" className="pt-4 scroll-mt-16">
           <StatusPanel />
           <DdayBanner />
@@ -71,19 +71,19 @@ export default function App() {
           onReset={handleTimerReset}
         />
         <ClassroomCanvas />
-        <div id="section-calendar" className="mt-8 scroll-mt-16">
+        <div id="section-calendar" className="scroll-mt-16">
           <StudyCalendar />
         </div>
-        <div id="section-quest" className="mt-16 scroll-mt-16">
+        <div id="section-quest" className="scroll-mt-16">
           <QuestPanel />
         </div>
-        <div id="section-char-stat" className="mt-16 scroll-mt-16">
+        <div id="section-char-stat" className="scroll-mt-16">
           <CharacterStatPanel />
         </div>
-        <div id="section-settings" className="mt-16 scroll-mt-16">
+        <div id="section-settings" className="scroll-mt-16">
           <SettingsPanel />
         </div>
-        <div id="section-charts" className="mt-16 scroll-mt-16">
+        <div id="section-charts" className="scroll-mt-16">
           <StatsPanel />
           <InfoPanel />
         </div>
