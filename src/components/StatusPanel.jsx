@@ -1,5 +1,6 @@
+import { useState, useRef, useEffect } from 'react';
 import { useStudies, useCharacter, useCoin } from '../hooks/useStudies';
-import { computeStats } from '../utils/xp';
+import { computeStats, JOB_MULT } from '../utils/xp';
 
 const BADGE_LIST = [
   { key: 'firstRecord',   icon: '🎯', label: '첫 기록'     },
@@ -20,13 +21,84 @@ export default function StatusPanel() {
   const characters = useCharacter();
   const coin       = useCoin();
 
+  const [levelUpModal, setLevelUpModal] = useState(false);
+  const prevLevelRef = useRef(null);
+  const timerRef     = useRef(null);
+
+  const character = (characters ?? [])[0] ?? null;
+  const { totalXP, todayXP, streak, level, levelName, progress, remaining, badges } =
+    computeStats(studies ?? [], character?.job ?? null);
+
+  useEffect(() => {
+    if (studies === undefined) return;
+    if (prevLevelRef.current !== null && level > prevLevelRef.current) {
+      setLevelUpModal(true);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setLevelUpModal(false), 3000);
+    }
+    prevLevelRef.current = level;
+    return () => clearTimeout(timerRef.current);
+  }, [level, studies]);
+
+  function closeModal() {
+    clearTimeout(timerRef.current);
+    setLevelUpModal(false);
+  }
+
   if (studies === undefined || characters === undefined || coin === undefined) return null;
 
-  const character = characters[0] ?? null;
-  const { totalXP, todayXP, streak, level, levelName, progress, remaining, badges } =
-    computeStats(studies, character?.job ?? null);
-
   return (
+    <>
+    {/* 레벨업 축하 모달 */}
+    {levelUpModal && (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div
+          className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl text-center"
+          style={{ animation: 'levelup-popup 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both' }}
+        >
+          <div className="text-5xl mb-2">🎉</div>
+          <h2 className="text-2xl font-bold mb-1">레벨업!</h2>
+          <p className="text-indigo-200 text-sm mb-4">새로운 칭호를 획득했습니다</p>
+
+          <div className="bg-white/15 rounded-xl px-4 py-3 mb-3">
+            <p className="text-xs text-indigo-300 mb-0.5">새 칭호</p>
+            <p className="text-xl font-bold">Lv.{level} {levelName}</p>
+          </div>
+
+          {character && JOB_MULT[character.job] && (
+            <div className="bg-white/15 rounded-xl px-4 py-3 mb-4 text-left">
+              <p className="text-xs text-indigo-300 mb-2">
+                {JOB_ICONS[character.job]} {JOB_LABELS[character.job]} 직업 배율
+              </p>
+              <div className="space-y-1 text-sm">
+                {[['hard', '어려움'], ['normal', '보통'], ['easy', '쉬움']].map(([key, label]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-indigo-200">{label}</span>
+                    <span className="font-bold text-yellow-300">×{JOB_MULT[character.job][key]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 3초 카운트다운 바 */}
+          <div className="h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
+            <div
+              className="h-full bg-white/50 rounded-full"
+              style={{ animation: 'countdown 3s linear forwards' }}
+            />
+          </div>
+
+          <button
+            onClick={closeModal}
+            className="w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 font-medium transition-colors text-sm"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    )}
+
     <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white rounded-2xl p-5 mx-4 mt-4 shadow-xl">
       {/* 캐릭터 정보 */}
       {character && (
@@ -123,5 +195,6 @@ export default function StatusPanel() {
         ))}
       </div>
     </div>
+    </>
   );
 }
