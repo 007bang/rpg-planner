@@ -4,11 +4,12 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import koLocale from '@fullcalendar/core/locales/ko';
 import { db } from '../db/db';
-import { useStudies, useSubjects, useExams } from '../hooks/useStudies';
+import { useStudies, useSubjects, useExams, useQuests } from '../hooks/useStudies';
 import AddStudyModal from './AddStudyModal';
 import EventPopup from './EventPopup';
 import AddExamModal from './AddExamModal';
 import ExamPopup from './ExamPopup';
+import QuestPopup from './QuestPopup';
 
 // 2025~2026 한국 법정공휴일
 const HOLIDAYS = new Set([
@@ -55,6 +56,30 @@ const HOLIDAYS = new Set([
   '2026-10-09', // 한글날
   '2026-12-25', // 성탄절
 ]);
+
+const QUEST_BG     = { easy: '#22c55e26', normal: '#3b82f626', hard: '#ef444426' };
+const QUEST_BORDER = { easy: '#22c55e',   normal: '#3b82f6',   hard: '#ef4444'   };
+const QUEST_TEXT   = { easy: '#15803d',   normal: '#1d4ed8',   hard: '#b91c1c'   };
+
+function questToEvent(quest) {
+  return {
+    id:              `quest-${quest.id}`,
+    title:           `📋 ${quest.title}`,
+    start:           quest.date,
+    backgroundColor: QUEST_BG[quest.difficulty]     ?? '#6b728026',
+    borderColor:     QUEST_BORDER[quest.difficulty]  ?? '#6b7280',
+    editable:        false,
+    extendedProps: {
+      type:       'quest',
+      questId:    quest.id,
+      title:      quest.title,
+      difficulty: quest.difficulty,
+      coin:       quest.coin,
+      status:     quest.status,
+      date:       quest.date,
+    },
+  };
+}
 
 function studyToEvent(study, subjects) {
   const subject = subjects.find(s => s.name === study.subject);
@@ -106,28 +131,32 @@ function examToEvent(exam, subjects) {
   };
 }
 
-const MODAL_CLOSED      = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
-const POPUP_CLOSED      = { open: false, extendedProps: null, position: null };
-const EXAM_MODAL_CLOSED = { open: false, date: '', key: 0, examId: null, initialValues: null };
-const EXAM_POPUP_CLOSED = { open: false, extendedProps: null, position: null };
+const MODAL_CLOSED       = { open: false, date: '', key: 0, editStudyId: null, initialValues: null };
+const POPUP_CLOSED       = { open: false, extendedProps: null, position: null };
+const EXAM_MODAL_CLOSED  = { open: false, date: '', key: 0, examId: null, initialValues: null };
+const EXAM_POPUP_CLOSED  = { open: false, extendedProps: null, position: null };
+const QUEST_POPUP_CLOSED = { open: false, extendedProps: null, position: null };
 
 export default function StudyCalendar() {
   const subjects = useSubjects() ?? [];
   const studies  = useStudies()  ?? [];
   const exams    = useExams()    ?? [];
+  const quests   = useQuests()   ?? [];
 
   const fcEvents = useMemo(
     () => [
       ...studies.map(s => studyToEvent(s, subjects)),
       ...exams.map(e => examToEvent(e, subjects)),
+      ...quests.map(q => questToEvent(q)),
     ],
-    [studies, subjects, exams],
+    [studies, subjects, exams, quests],
   );
 
-  const [modalState,     setModalState]     = useState(MODAL_CLOSED);
-  const [popupState,     setPopupState]     = useState(POPUP_CLOSED);
-  const [examModalState, setExamModalState] = useState(EXAM_MODAL_CLOSED);
-  const [examPopupState, setExamPopupState] = useState(EXAM_POPUP_CLOSED);
+  const [modalState,      setModalState]      = useState(MODAL_CLOSED);
+  const [popupState,      setPopupState]      = useState(POPUP_CLOSED);
+  const [examModalState,  setExamModalState]  = useState(EXAM_MODAL_CLOSED);
+  const [examPopupState,  setExamPopupState]  = useState(EXAM_POPUP_CLOSED);
+  const [questPopupState, setQuestPopupState] = useState(QUEST_POPUP_CLOSED);
 
   const longPressRef = useRef({ timer: null, fired: false });
 
@@ -167,23 +196,16 @@ export default function StudyCalendar() {
     const x = Math.min(clientX + 12, window.innerWidth - 232);
     const y = Math.min(Math.max(clientY - 20, 10), window.innerHeight - 300);
 
-    if (arg.event.extendedProps.type === 'exam') {
-      setExamPopupState({
-        open: true,
-        extendedProps: { ...arg.event.extendedProps },
-        position: { x, y },
-      });
-    } else {
-      setPopupState({
-        open: true,
-        extendedProps: { ...arg.event.extendedProps },
-        position: { x, y },
-      });
-    }
+    const { type } = arg.event.extendedProps;
+    const props = { open: true, extendedProps: { ...arg.event.extendedProps }, position: { x, y } };
+    if (type === 'exam')        setExamPopupState(props);
+    else if (type === 'quest')  setQuestPopupState(props);
+    else                        setPopupState(props);
   }, []);
 
   const handleEventDrop = useCallback(async (info) => {
     const { type, studyId, examId } = info.event.extendedProps;
+    if (type === 'quest') { info.revert(); return; }
     const newDate = info.event.startStr.slice(0, 10);
     try {
       if (type === 'exam') {
@@ -197,8 +219,25 @@ export default function StudyCalendar() {
   }, []);
 
   const renderEventContent = useCallback((eventInfo) => {
-    const { status, type } = eventInfo.event.extendedProps;
-    const faded = type !== 'exam' && status === 'completed';
+    const { status, type, difficulty } = eventInfo.event.extendedProps;
+    const done = status === 'completed';
+
+    if (type === 'quest') {
+      return (
+        <div
+          className="px-1 text-xs font-bold truncate w-full leading-relaxed"
+          style={{
+            color:          QUEST_TEXT[difficulty] ?? '#374151',
+            opacity:        done ? 0.5 : 1,
+            textDecoration: done ? 'line-through' : 'none',
+          }}
+        >
+          {eventInfo.event.title}
+        </div>
+      );
+    }
+
+    const faded = type !== 'exam' && done;
     return (
       <div className={`px-1 text-white text-xs font-bold truncate w-full leading-relaxed${faded ? ' opacity-50' : ''}`}>
         {eventInfo.event.title}
@@ -359,6 +398,13 @@ export default function StudyCalendar() {
           onDelete={handleExamDelete}
           onEdit={handleExamEdit}
           onClose={() => setExamPopupState(EXAM_POPUP_CLOSED)}
+        />
+      )}
+      {questPopupState.open && (
+        <QuestPopup
+          extendedProps={questPopupState.extendedProps}
+          position={questPopupState.position}
+          onClose={() => setQuestPopupState(QUEST_POPUP_CLOSED)}
         />
       )}
     </div>
