@@ -4,6 +4,7 @@ import { useCharacter, useSubjects } from './hooks/useStudies';
 import { useTimer } from './hooks/useTimer';
 import NavBar from './components/NavBar';
 import StudyTimer from './components/StudyTimer';
+import ClassroomCanvas from './components/ClassroomCanvas';
 import AddStudyModal from './components/AddStudyModal';
 import StatusPanel from './components/StatusPanel';
 import DdayBanner from './components/DdayBanner';
@@ -69,7 +70,8 @@ export default function App() {
           onPause={pause}
           onReset={handleTimerReset}
         />
-        <div id="section-calendar" className="mt-16 scroll-mt-16">
+        <ClassroomCanvas />
+        <div id="section-calendar" className="mt-8 scroll-mt-16">
           <StudyCalendar />
         </div>
         <div id="section-quest" className="mt-16 scroll-mt-16">
