@@ -18,9 +18,9 @@ const GRADE_CLS = {
 };
 
 export default function CharacterStatPanel() {
-  const studies    = useStudies()    ?? [];
-  const quests     = useQuests()     ?? [];
-  const characters = useCharacter()  ?? [];
+  const studies    = useStudies();
+  const quests     = useQuests();
+  const characters = useCharacter();
 
   if (studies === undefined || quests === undefined || characters === undefined) return null;
 

@@ -7,7 +7,9 @@ import SubjectManager from './SubjectManager';
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
 
-const VALID_STATUSES = ['pending', 'studying', 'completed'];
+const VALID_STATUSES   = ['pending', 'studying', 'completed'];
+const VALID_QUEST_STAT = ['pending', 'completed'];
+const VALID_DIFF       = ['easy', 'normal', 'hard'];
 
 function validateStudy(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -29,6 +31,33 @@ function validateStudy(raw) {
     out.status = 'pending';
   }
 
+  return out;
+}
+
+function validateQuest(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  if (!raw.title || typeof raw.title !== 'string') return null;
+
+  const out = {};
+  if (typeof raw.id === 'number') out.id = raw.id;
+  out.title      = raw.title.trim();
+  out.difficulty = VALID_DIFF.includes(raw.difficulty) ? raw.difficulty : 'normal';
+  out.coin       = typeof raw.coin === 'number' ? raw.coin : 0;
+  out.status     = VALID_QUEST_STAT.includes(raw.status) ? raw.status : 'pending';
+  out.date       = raw.date ? String(raw.date) : new Date().toISOString().slice(0, 10);
+  if (typeof raw.actualDuration === 'number') out.actualDuration = raw.actualDuration;
+  return out;
+}
+
+function validateExam(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  if (!raw.subject || !raw.date) return null;
+
+  const out = {};
+  if (typeof raw.id === 'number') out.id = raw.id;
+  out.subject = String(raw.subject);
+  out.date    = String(raw.date);
+  out.range   = raw.range ? String(raw.range) : '';
   return out;
 }
 
@@ -60,12 +89,14 @@ export default function SettingsPanel() {
   async function handleExport() {
     setExporting(true);
     try {
-      const [studies, subjects] = await Promise.all([
+      const [studies, subjects, quests, exams] = await Promise.all([
         db.studies.toArray(),
         db.subjects.toArray(),
+        db.quests.toArray(),
+        db.exams.toArray(),
       ]);
       const blob = new Blob(
-        [JSON.stringify({ studies, subjects }, null, 2)],
+        [JSON.stringify({ studies, subjects, quests, exams }, null, 2)],
         { type: 'application/json' },
       );
       const url = URL.createObjectURL(blob);
@@ -110,19 +141,28 @@ export default function SettingsPanel() {
           return;
         }
 
-        const valid = parsed.studies.map(validateStudy).filter(Boolean);
+        const validStudies = parsed.studies.map(validateStudy).filter(Boolean);
+        const validQuests  = (parsed.quests  ?? []).map(validateQuest).filter(Boolean);
+        const validExams   = (parsed.exams   ?? []).map(validateExam).filter(Boolean);
+        const total = validStudies.length + validQuests.length + validExams.length;
 
         if (importModeRef.current === 'replace') {
-          await db.transaction('rw', db.studies, async () => {
+          await db.transaction('rw', db.studies, db.quests, db.exams, async () => {
             await db.studies.clear();
-            await db.studies.bulkAdd(valid);
+            await db.studies.bulkAdd(validStudies);
+            await db.quests.clear();
+            if (validQuests.length > 0) await db.quests.bulkAdd(validQuests);
+            await db.exams.clear();
+            if (validExams.length > 0) await db.exams.bulkAdd(validExams);
           });
-          showToast(`기존 데이터를 삭제하고 ${valid.length}건을 불러왔습니다`);
+          showToast(`기존 데이터를 삭제하고 ${total}건을 불러왔습니다`);
         } else {
-          await db.transaction('rw', db.studies, async () => {
-            await db.studies.bulkPut(valid);
+          await db.transaction('rw', db.studies, db.quests, db.exams, async () => {
+            await db.studies.bulkPut(validStudies);
+            if (validQuests.length > 0) await db.quests.bulkPut(validQuests);
+            if (validExams.length > 0) await db.exams.bulkPut(validExams);
           });
-          showToast(`${valid.length}건의 기록을 추가했습니다`);
+          showToast(`${total}건의 기록을 추가했습니다`);
         }
       } catch {
         showToast('가져오기 중 오류가 발생했습니다');
