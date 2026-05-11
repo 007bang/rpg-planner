@@ -7,7 +7,7 @@ const DIFFICULTIES = [
 ];
 
 export default function AddStudyModal({ open, date, subjects, onSave, onClose, initialValues }) {
-  const isEdit = !!initialValues;
+  const isEdit = !!initialValues?.id;
   const initMins = initialValues?.minutes ?? 60;
   const [subject, setSubject] = useState(initialValues?.subject ?? '');
   const [difficulty, setDifficulty] = useState(initialValues?.difficulty ?? 'normal');

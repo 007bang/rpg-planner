@@ -303,7 +303,7 @@ export default function StudyCalendar() {
       date,
       key: prev.key + 1,
       editStudyId: studyId,
-      initialValues: { subject: subjectName, difficulty, minutes, memo },
+      initialValues: { id: studyId, subject: subjectName, difficulty, minutes, memo },
     }));
   }
 
