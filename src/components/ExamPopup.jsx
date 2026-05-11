@@ -16,15 +16,15 @@ export default function ExamPopup({ extendedProps, position, onDelete, onEdit, o
     <div
       ref={ref}
       style={{ position: 'fixed', top: position.y, left: position.x, zIndex: 1000 }}
-      className="bg-white rounded-2xl shadow-2xl p-4 w-52 border border-gray-100"
+      className="bg-rpg-card rounded-2xl shadow-2xl p-4 w-52 border border-rpg-border"
     >
       <div className="flex items-center gap-2 mb-0.5">
         <span className="text-lg">📝</span>
-        <p className="font-bold text-gray-800">{subject} 시험</p>
+        <p className="font-bold text-rpg-text">{subject} 시험</p>
       </div>
-      <p className="text-xs text-gray-400 mb-2">{date}</p>
+      <p className="text-xs text-rpg-muted mb-2">{date}</p>
       {range ? (
-        <p className="text-xs text-gray-600 mb-3 whitespace-pre-wrap leading-relaxed bg-gray-50 rounded-lg px-3 py-2">
+        <p className="text-xs text-rpg-text mb-3 whitespace-pre-wrap leading-relaxed bg-rpg-border/40 rounded-lg px-3 py-2">
           {range}
         </p>
       ) : (
@@ -33,13 +33,13 @@ export default function ExamPopup({ extendedProps, position, onDelete, onEdit, o
       <div className="flex gap-2">
         <button
           onClick={onEdit}
-          className="flex-1 min-h-[44px] rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
+          className="flex-1 min-h-[44px] rounded-xl bg-rpg-purple text-white font-medium hover:bg-purple-700 transition-colors"
         >
           수정
         </button>
         <button
           onClick={onDelete}
-          className="flex-1 min-h-[44px] rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-colors"
+          className="flex-1 min-h-[44px] rounded-xl bg-rpg-red text-white font-medium hover:bg-red-600 transition-colors"
         >
           삭제
         </button>

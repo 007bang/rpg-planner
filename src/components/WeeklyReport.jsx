@@ -35,12 +35,12 @@ function calcStreak(completedStudies) {
   return streak;
 }
 
-function StatCard({ value, label, sub, valueClass = 'text-indigo-600' }) {
+function StatCard({ value, label, sub, valueClass = 'text-rpg-purple' }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-0.5">
+    <div className="bg-rpg-card rounded-2xl border border-rpg-border shadow-lg p-4 flex flex-col gap-0.5">
       <p className={`text-3xl font-bold truncate ${valueClass}`}>{value}</p>
-      <p className="text-sm font-medium text-gray-700">{label}</p>
-      <p className="text-xs text-gray-400">{sub}</p>
+      <p className="text-sm font-medium text-rpg-text">{label}</p>
+      <p className="text-xs text-rpg-muted">{sub}</p>
     </div>
   );
 }
@@ -62,14 +62,12 @@ export default function WeeklyReport() {
     const rate = Math.round((weekDone.length / weekAll.length) * 100);
     const streak = calcStreak(studies.filter(s => s.status === 'completed'));
 
-    // 과목별 분 합산
     const minsBySubject = {};
     for (const s of weekDone) {
       minsBySubject[s.subject] = (minsBySubject[s.subject] ?? 0) + s.minutes;
     }
     const entries = Object.entries(minsBySubject);
 
-    // 최솟값과 동점 과목 전부 수집
     let weakest = null;
     if (entries.length > 0) {
       const minMins = Math.min(...entries.map(e => e[1]));
@@ -91,7 +89,7 @@ export default function WeeklyReport() {
 
   if (stats.empty) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center text-sm text-gray-400">
+      <div className="bg-rpg-card rounded-2xl border border-rpg-border shadow-lg p-6 text-center text-sm text-rpg-muted">
         이번 주 기록이 없습니다
       </div>
     );
@@ -117,7 +115,7 @@ export default function WeeklyReport() {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest px-1">
+      <h3 className="text-xs font-semibold text-rpg-muted uppercase tracking-widest px-1">
         이번 주 리포트
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -125,19 +123,19 @@ export default function WeeklyReport() {
           value={`${stats.rate}%`}
           label="완료율"
           sub={`${stats.completedCount}/${stats.totalCount}건 완료`}
-          valueClass="text-indigo-600"
+          valueClass="text-rpg-purple"
         />
         <StatCard
           value={stats.streak > 0 ? `${stats.streak}일` : '-'}
           label="연속 학습일"
           sub={streakSub}
-          valueClass="text-orange-500"
+          valueClass="text-orange-400"
         />
         <StatCard
           value={weakValue}
           label="약한 과목"
           sub={weakSub}
-          valueClass="text-amber-500"
+          valueClass="text-rpg-gold"
         />
       </div>
     </div>

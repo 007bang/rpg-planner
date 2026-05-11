@@ -25,12 +25,47 @@ export default function InfoPanel() {
 
   return (
     <div id="info-section" className="mx-4 mb-4 space-y-3">
-      {/* 뱃지 획득 조건 */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100">
-          <h3 className="text-sm font-bold text-gray-700">뱃지 획득 조건</h3>
+      {/* 레벨 칭호 */}
+      <div className="bg-rpg-card rounded-2xl shadow-lg border border-rpg-border overflow-hidden">
+        <div className="px-5 py-3 border-b border-rpg-border">
+          <h3 className="text-sm font-bold text-rpg-text">레벨 칭호</h3>
         </div>
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-rpg-border/40">
+          {LEVEL_INFO.map(info => {
+            const isCurrent = level === info.level;
+            return (
+              <div
+                key={info.level}
+                className={`flex items-center gap-4 px-5 py-3.5 transition-colors${isCurrent ? ' bg-rpg-purple/15' : ' opacity-35'}`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0${isCurrent ? ' bg-rpg-purple text-white' : ' bg-rpg-border text-rpg-muted'}`}>
+                  {info.level}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold${isCurrent ? ' text-rpg-text' : ' text-rpg-muted'}`}>
+                    {info.name}
+                  </p>
+                  <p className={`text-xs mt-0.5${isCurrent ? ' text-rpg-muted' : ' text-rpg-muted/60'}`}>
+                    {info.range}
+                  </p>
+                </div>
+                {isCurrent && (
+                  <span className="text-xs font-medium text-rpg-purple bg-rpg-purple/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                    현재
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 뱃지 획득 조건 */}
+      <div className="bg-rpg-card rounded-2xl shadow-lg border border-rpg-border overflow-hidden">
+        <div className="px-5 py-3 border-b border-rpg-border">
+          <h3 className="text-sm font-bold text-rpg-text">뱃지 획득 조건</h3>
+        </div>
+        <div className="divide-y divide-rpg-border/40">
           {BADGE_DETAIL.map(badge => (
             <div
               key={badge.key}
@@ -38,51 +73,16 @@ export default function InfoPanel() {
             >
               <span className="text-2xl flex-shrink-0">{badge.icon}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800">{badge.label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{badge.desc}</p>
+                <p className="text-sm font-semibold text-rpg-text">{badge.label}</p>
+                <p className="text-xs text-rpg-muted mt-0.5">{badge.desc}</p>
               </div>
               {badges[badge.key] && (
-                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex-shrink-0">
+                <span className="text-xs font-medium text-rpg-green bg-green-900/30 px-2 py-0.5 rounded-full flex-shrink-0">
                   획득
                 </span>
               )}
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* 레벨 칭호 */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100">
-          <h3 className="text-sm font-bold text-gray-700">레벨 칭호</h3>
-        </div>
-        <div className="divide-y divide-gray-50">
-          {LEVEL_INFO.map(info => {
-            const isCurrent = level === info.level;
-            return (
-              <div
-                key={info.level}
-                className={`flex items-center gap-4 px-5 py-3.5 transition-colors${isCurrent ? ' bg-indigo-50' : ' opacity-40'}`}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0${isCurrent ? ' bg-indigo-600 text-white' : ' bg-gray-100 text-gray-500'}`}>
-                  {info.level}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold${isCurrent ? ' text-indigo-700' : ' text-gray-700'}`}>
-                    {info.name}
-                  </p>
-                  <p className={`text-xs mt-0.5${isCurrent ? ' text-indigo-400' : ' text-gray-400'}`}>
-                    {info.range}
-                  </p>
-                </div>
-                {isCurrent && (
-                  <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full flex-shrink-0">
-                    현재
-                  </span>
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>

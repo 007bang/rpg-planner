@@ -3,7 +3,7 @@ import { db } from '../db/db';
 import { useQuests } from '../hooks/useStudies';
 
 const COIN_BY_DIFF  = { easy: 2, normal: 5, hard: 10 };
-const DIFF_BORDER   = { easy: 'border-green-400', normal: 'border-blue-400', hard: 'border-red-400' };
+const DIFF_BORDER   = { easy: 'border-green-500', normal: 'border-blue-500', hard: 'border-red-500' };
 
 function todayStr() {
   const d = new Date();
@@ -93,28 +93,28 @@ export default function QuestPanel() {
     <div className="mx-4 mb-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-1 mb-3">
-        <h2 className="text-lg font-bold text-gray-800">퀘스트</h2>
+        <h2 className="text-lg font-bold text-rpg-text">퀘스트</h2>
         <button
           onClick={openAdd}
-          className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-rpg-gold text-gray-900 text-sm font-bold hover:opacity-90 transition-opacity"
         >
           + 퀘스트 추가
         </button>
       </div>
 
       {/* 날짜 탐색 */}
-      <div className="flex flex-col items-center gap-1 bg-white rounded-xl border border-gray-100 shadow-sm px-3 py-2 mb-3">
+      <div className="flex flex-col items-center gap-1 bg-rpg-card rounded-xl border border-rpg-border shadow-lg px-3 py-2 mb-3">
         <div className="flex items-center justify-between w-full">
           <button
             onClick={() => setSelectedDate(d => addDays(d, -1))}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 font-bold transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-rpg-border text-rpg-muted font-bold transition-colors"
           >
             ‹
           </button>
-          <span className="text-sm font-medium text-gray-800">{formatDate(selectedDate)}</span>
+          <span className="text-sm font-medium text-rpg-text">{formatDate(selectedDate)}</span>
           <button
             onClick={() => setSelectedDate(d => addDays(d, 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 font-bold transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-rpg-border text-rpg-muted font-bold transition-colors"
           >
             ›
           </button>
@@ -122,7 +122,7 @@ export default function QuestPanel() {
         {!isToday && (
           <button
             onClick={() => setSelectedDate(today)}
-            className="text-xs text-indigo-500 font-medium hover:text-indigo-700"
+            className="text-xs text-rpg-purple font-medium hover:text-purple-400"
           >
             오늘로 돌아가기
           </button>
@@ -131,7 +131,7 @@ export default function QuestPanel() {
 
       {/* 퀘스트 목록 */}
       {sorted.length === 0 ? (
-        <p className="text-center text-gray-400 text-sm py-6">이 날의 퀘스트가 없습니다</p>
+        <p className="text-center text-rpg-muted text-sm py-6">이 날의 퀘스트가 없습니다</p>
       ) : (
         <div className="space-y-1.5">
           {sorted.map(quest => {
@@ -139,38 +139,34 @@ export default function QuestPanel() {
             return (
               <div
                 key={quest.id}
-                className={`bg-white rounded-xl border-l-4 ${DIFF_BORDER[quest.difficulty]} shadow-sm px-3 py-2.5 flex items-center gap-2.5 transition-opacity ${done ? 'opacity-50' : ''}`}
+                className={`bg-rpg-card rounded-xl border-l-4 ${DIFF_BORDER[quest.difficulty]} border border-rpg-border shadow-lg px-3 py-2.5 flex items-center gap-2.5 transition-opacity ${done ? 'opacity-40' : ''}`}
               >
-                {/* 체크박스 */}
                 <button
                   onClick={() => handleToggle(quest)}
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
                     done
-                      ? 'bg-indigo-500 border-indigo-500 text-white'
-                      : 'border-gray-300 hover:border-indigo-400'
+                      ? 'bg-rpg-green border-rpg-green text-white'
+                      : 'border-rpg-muted hover:border-rpg-purple'
                   }`}
                 >
                   {done && <span className="text-[10px] leading-none font-bold">✓</span>}
                 </button>
 
-                {/* 제목 */}
-                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                <span className={`flex-1 text-sm font-medium min-w-0 truncate ${done ? 'line-through text-rpg-muted' : 'text-rpg-text'}`}>
                   {quest.title}
                 </span>
 
-                {/* 코인 */}
-                <span className="text-xs font-bold text-yellow-600 shrink-0">🪙 {quest.coin}</span>
+                <span className="text-xs font-bold text-rpg-gold shrink-0">🪙 {quest.coin}</span>
 
-                {/* 수정 / 삭제 */}
                 <button
                   onClick={() => openEdit(quest)}
-                  className="text-xs text-gray-400 hover:text-gray-600 shrink-0 px-1 transition-colors"
+                  className="text-xs text-rpg-muted hover:text-rpg-text shrink-0 px-1 transition-colors"
                 >
                   수정
                 </button>
                 <button
                   onClick={() => handleDelete(quest)}
-                  className="text-xs text-gray-400 hover:text-red-400 shrink-0 px-1 transition-colors"
+                  className="text-xs text-rpg-muted hover:text-rpg-red shrink-0 px-1 transition-colors"
                 >
                   삭제
                 </button>
@@ -183,21 +179,21 @@ export default function QuestPanel() {
       {/* 소요 시간 입력 모달 */}
       {durationModal.open && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
           onClick={() => setDurationModal(DURATION_CLOSED)}
         >
           <div
-            className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl"
+            className="bg-rpg-card rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-rpg-border"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold mb-1 text-gray-800">⏱ 실제 소요 시간</h2>
-            <p className="text-sm text-gray-500 mb-5">
+            <h2 className="text-lg font-bold mb-1 text-rpg-text">⏱ 실제 소요 시간</h2>
+            <p className="text-sm text-rpg-muted mb-5">
               &quot;{durationModal.quest?.title}&quot; 완료까지 얼마나 걸렸나요?
             </p>
 
             <div className="flex items-center justify-center gap-3 mb-2">
               <div className="flex flex-col items-center gap-1">
-                <label className="text-xs font-medium text-gray-500">시간</label>
+                <label className="text-xs font-medium text-rpg-muted">시간</label>
                 <input
                   type="number"
                   min={0}
@@ -209,12 +205,12 @@ export default function QuestPanel() {
                       hours: Math.min(23, Math.max(0, Number(e.target.value))),
                     }))
                   }
-                  className="w-20 text-center text-2xl font-bold border-2 rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-20 text-center text-2xl font-bold border-2 border-rpg-border rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                 />
               </div>
-              <span className="text-2xl font-bold text-gray-400 mt-5">:</span>
+              <span className="text-2xl font-bold text-rpg-muted mt-5">:</span>
               <div className="flex flex-col items-center gap-1">
-                <label className="text-xs font-medium text-gray-500">분</label>
+                <label className="text-xs font-medium text-rpg-muted">분</label>
                 <input
                   type="number"
                   min={0}
@@ -226,26 +222,26 @@ export default function QuestPanel() {
                       minutes: Math.min(59, Math.max(0, Number(e.target.value))),
                     }))
                   }
-                  className="w-20 text-center text-2xl font-bold border-2 rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-20 text-center text-2xl font-bold border-2 border-rpg-border rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                 />
               </div>
             </div>
 
             {durationModal.hours * 60 + durationModal.minutes < 1 && (
-              <p className="text-center text-xs text-red-400 mb-3">최소 1분 이상 입력해주세요</p>
+              <p className="text-center text-xs text-rpg-red mb-3">최소 1분 이상 입력해주세요</p>
             )}
 
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => setDurationModal(DURATION_CLOSED)}
-                className="flex-1 min-h-[44px] rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 min-h-[44px] rounded-xl border border-rpg-border text-rpg-text font-medium hover:bg-rpg-border transition-colors"
               >
                 취소
               </button>
               <button
                 onClick={handleDurationSave}
                 disabled={durationModal.hours * 60 + durationModal.minutes < 1}
-                className="flex-1 min-h-[44px] rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors disabled:opacity-40"
+                className="flex-1 min-h-[44px] rounded-xl bg-rpg-purple text-white font-medium hover:bg-purple-700 transition-colors disabled:opacity-40"
               >
                 완료 저장
               </button>
@@ -257,28 +253,28 @@ export default function QuestPanel() {
       {/* 추가/수정 모달 */}
       {modal.open && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
           onClick={() => setModal(MODAL_CLOSED)}
         >
           <div
-            className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl"
+            className="bg-rpg-card rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-rpg-border"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold mb-4 text-gray-800">
+            <h2 className="text-lg font-bold mb-4 text-rpg-text">
               {isEdit ? '📜 퀘스트 수정' : '📜 퀘스트 추가'}
             </h2>
             <div className="flex flex-col gap-3">
-              <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+              <label className="flex flex-col gap-1 text-sm font-medium text-rpg-muted">
                 날짜
                 <input
                   type="date"
                   value={modal.date}
                   onChange={e => setModal(prev => ({ ...prev, date: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="border border-rpg-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                 />
               </label>
 
-              <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+              <label className="flex flex-col gap-1 text-sm font-medium text-rpg-muted">
                 제목
                 <input
                   type="text"
@@ -286,16 +282,16 @@ export default function QuestPanel() {
                   onChange={e => setModal(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="퀘스트 제목을 입력하세요"
                   maxLength={40}
-                  className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="border border-rpg-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                 />
               </label>
 
-              <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+              <label className="flex flex-col gap-1 text-sm font-medium text-rpg-muted">
                 난이도
                 <select
                   value={modal.difficulty}
                   onChange={e => setModal(prev => ({ ...prev, difficulty: e.target.value }))}
-                  className="border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="border border-rpg-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                 >
                   <option value="">선택하세요</option>
                   <option value="easy">쉬움</option>
@@ -305,23 +301,23 @@ export default function QuestPanel() {
               </label>
 
               {modal.difficulty && (
-                <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2">
-                  <span className="text-sm text-gray-600">코인 보상</span>
-                  <span className="font-bold text-yellow-600 ml-auto">🪙 {coinReward}</span>
+                <div className="flex items-center gap-2 bg-rpg-border/50 border border-rpg-border rounded-lg px-3 py-2">
+                  <span className="text-sm text-rpg-muted">코인 보상</span>
+                  <span className="font-bold text-rpg-gold ml-auto">🪙 {coinReward}</span>
                 </div>
               )}
 
               <div className="flex gap-2 mt-1">
                 <button
                   onClick={() => setModal(MODAL_CLOSED)}
-                  className="flex-1 min-h-[44px] rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 min-h-[44px] rounded-xl border border-rpg-border text-rpg-text font-medium hover:bg-rpg-border transition-colors"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={!modal.title.trim() || !modal.difficulty || !modal.date}
-                  className="flex-1 min-h-[44px] rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+                  className="flex-1 min-h-[44px] rounded-xl bg-rpg-gold text-gray-900 font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
                   {isEdit ? '저장' : '추가'}
                 </button>

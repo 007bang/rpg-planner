@@ -71,7 +71,7 @@ export default function SubjectManager() {
 
   return (
     <>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-rpg-border/40">
         {subjects.map(subject => (
           <div key={subject.id}>
             {editingId === subject.id ? (
@@ -86,13 +86,13 @@ export default function SubjectManager() {
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="flex-1 border border-rpg-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                   autoFocus
                 />
-                <button type="submit" className="text-sm px-3 py-1.5 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors flex-shrink-0">
+                <button type="submit" className="text-sm px-3 py-1.5 rounded-lg bg-rpg-purple text-white hover:bg-purple-700 transition-colors flex-shrink-0">
                   확인
                 </button>
-                <button type="button" onClick={() => setEditingId(null)} className="text-sm px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex-shrink-0">
+                <button type="button" onClick={() => setEditingId(null)} className="text-sm px-3 py-1.5 rounded-lg bg-rpg-border text-rpg-text hover:bg-rpg-border/70 transition-colors flex-shrink-0">
                   취소
                 </button>
               </form>
@@ -102,16 +102,16 @@ export default function SubjectManager() {
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: subject.color }}
                 />
-                <span className="flex-1 text-sm font-medium text-gray-800">{subject.name}</span>
+                <span className="flex-1 text-sm font-medium text-rpg-text">{subject.name}</span>
                 <button
                   onClick={() => startEdit(subject)}
-                  className="text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                  className="text-xs text-rpg-muted hover:text-rpg-purple transition-colors"
                 >
                   수정
                 </button>
                 <button
                   onClick={() => handleDelete(subject)}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                  className="text-xs text-rpg-muted hover:text-rpg-red transition-colors"
                 >
                   삭제
                 </button>
@@ -133,13 +133,13 @@ export default function SubjectManager() {
               value={addName}
               onChange={e => setAddName(e.target.value)}
               placeholder="과목 이름"
-              className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="flex-1 border border-rpg-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rpg-purple"
               autoFocus
             />
-            <button type="submit" className="text-sm px-3 py-1.5 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors flex-shrink-0">
+            <button type="submit" className="text-sm px-3 py-1.5 rounded-lg bg-rpg-purple text-white hover:bg-purple-700 transition-colors flex-shrink-0">
               추가
             </button>
-            <button type="button" onClick={() => { setAdding(false); setAddName(''); }} className="text-sm px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex-shrink-0">
+            <button type="button" onClick={() => { setAdding(false); setAddName(''); }} className="text-sm px-3 py-1.5 rounded-lg bg-rpg-border text-rpg-text hover:bg-rpg-border/70 transition-colors flex-shrink-0">
               취소
             </button>
           </form>
@@ -147,7 +147,7 @@ export default function SubjectManager() {
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="w-full py-2.5 text-sm text-indigo-500 hover:text-indigo-600 text-left font-medium transition-colors"
+            className="w-full py-2.5 text-sm text-rpg-purple hover:text-purple-400 text-left font-medium transition-colors"
           >
             + 과목 추가
           </button>
@@ -155,7 +155,7 @@ export default function SubjectManager() {
       </div>
 
       {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none whitespace-nowrap">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-rpg-border text-rpg-text text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none whitespace-nowrap border border-rpg-border">
           {toastMsg}
         </div>
       )}

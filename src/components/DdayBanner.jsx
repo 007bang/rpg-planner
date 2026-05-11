@@ -41,7 +41,7 @@ export default function DdayBanner() {
             <div
               key={exam.id}
               style={{ backgroundColor: color }}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-white border-2 border-gray-900 cursor-pointer active:opacity-80"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-white border-2 border-rpg-border cursor-pointer active:opacity-80"
               onClick={() => setModal({ open: true, examId: exam.id, subject: exam.subject, range: exam.range ?? '' })}
             >
               <span>📝 {exam.subject}</span>
@@ -55,31 +55,31 @@ export default function DdayBanner() {
 
       {modal.open && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
           onClick={() => setModal(MODAL_CLOSED)}
         >
           <div
-            className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl"
+            className="bg-rpg-card rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-rpg-border"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold mb-4 text-gray-800">📝 {modal.subject} 시험 범위</h2>
+            <h2 className="text-lg font-bold mb-4 text-rpg-text">📝 {modal.subject} 시험 범위</h2>
             <textarea
               value={modal.range}
               onChange={e => setModal(prev => ({ ...prev, range: e.target.value }))}
               rows={5}
               placeholder="시험 범위를 입력하세요"
-              className="w-full border rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm"
+              className="w-full border border-rpg-border rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-rpg-purple text-sm"
             />
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => setModal(MODAL_CLOSED)}
-                className="flex-1 min-h-[44px] rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 min-h-[44px] rounded-xl border border-rpg-border text-rpg-text font-medium hover:bg-rpg-border transition-colors"
               >
                 취소
               </button>
               <button
                 onClick={handleRangeSave}
-                className="flex-1 min-h-[44px] rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-700 transition-colors"
+                className="flex-1 min-h-[44px] rounded-xl bg-rpg-gold text-gray-900 font-medium hover:opacity-90 transition-opacity"
               >
                 저장
               </button>

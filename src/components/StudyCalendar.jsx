@@ -338,7 +338,7 @@ export default function StudyCalendar() {
       <div className="flex justify-end mb-2">
         <button
           onClick={() => setExamModalState(prev => ({ open: true, date: '', key: prev.key + 1 }))}
-          className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-rpg-gold text-gray-900 text-sm font-bold hover:opacity-90 transition-opacity"
         >
           📝 시험 추가
         </button>

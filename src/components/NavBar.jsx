@@ -22,9 +22,9 @@ export default function NavBar({ timerElapsed = 0, timerRunning = false }) {
   }
 
   return (
-    <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+    <div className="sticky top-0 z-40 bg-rpg-card border-b border-rpg-border shadow-lg">
       {timerRunning && (
-        <div className="bg-indigo-600 text-white text-xs font-bold font-mono text-center py-1 tracking-wide">
+        <div className="bg-rpg-purple text-white text-xs font-bold font-mono text-center py-1 tracking-wide">
           ⏱ {formatNavTime(timerElapsed)} 학습 중
         </div>
       )}
@@ -33,10 +33,10 @@ export default function NavBar({ timerElapsed = 0, timerRunning = false }) {
           <button
             key={item.id}
             onClick={() => scrollTo(item.id)}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-rpg-border active:bg-rpg-border/70 transition-colors"
           >
             <span className="text-lg leading-none">{item.icon}</span>
-            <span className="text-[10px] text-gray-500 font-medium">{item.label}</span>
+            <span className="text-[10px] text-rpg-muted font-medium">{item.label}</span>
           </button>
         ))}
       </div>

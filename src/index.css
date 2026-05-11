@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --color-rpg-bg:     #1a1a2e;
+  --color-rpg-card:   #16213e;
+  --color-rpg-border: #0f3460;
+  --color-rpg-text:   #e0e0e0;
+  --color-rpg-muted:  #8892b0;
+  --color-rpg-gold:   #f0a500;
+  --color-rpg-purple: #7c3aed;
+  --color-rpg-green:  #10b981;
+  --color-rpg-red:    #ef4444;
+}
+
 :root {
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -8,8 +20,88 @@
 
 body {
   margin: 0;
+  background-color: #1a1a2e;
+  color: #e0e0e0;
 }
 
+/* ── 폼 요소 다크 테마 ──────────────────────────── */
+input:not([type="color"]):not([type="range"]),
+select,
+textarea {
+  background-color: #0f3460;
+  color: #e0e0e0;
+  border-color: #1e4080;
+}
+input:not([type="color"])::placeholder,
+textarea::placeholder {
+  color: #8892b0;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+}
+option {
+  background-color: #0f3460;
+  color: #e0e0e0;
+}
+
+/* ── FullCalendar 다크 테마 ─────────────────────── */
+.fc {
+  color: #e0e0e0;
+}
+.fc .fc-toolbar-title {
+  color: #e0e0e0;
+  font-size: 1rem;
+}
+.fc .fc-button {
+  background-color: #0f3460 !important;
+  border-color: #1e4080 !important;
+  color: #e0e0e0 !important;
+}
+.fc .fc-button:hover {
+  background-color: #1e4080 !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #7c3aed !important;
+  border-color: #7c3aed !important;
+}
+.fc .fc-col-header-cell {
+  background-color: #16213e;
+  border-color: #0f3460 !important;
+}
+.fc .fc-col-header-cell-cushion {
+  color: #8892b0;
+  font-size: 0.75rem;
+}
+.fc .fc-daygrid-day {
+  background-color: #16213e;
+  border-color: #0f3460 !important;
+}
+.fc .fc-daygrid-day:hover {
+  background-color: #1e2d4d;
+}
+.fc .fc-daygrid-day-number {
+  color: #8892b0;
+}
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: #1e2d4d !important;
+}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: #f0a500;
+  font-weight: bold;
+}
+.fc .fc-scrollgrid {
+  border-color: #0f3460 !important;
+}
+.fc .fc-scrollgrid td,
+.fc .fc-scrollgrid th {
+  border-color: #0f3460 !important;
+}
+.fc .fc-daygrid-more-link {
+  color: #8892b0;
+}
+
+/* ── 애니메이션 ─────────────────────────────────── */
 @keyframes levelup-popup {
   0%   { opacity: 0; transform: scale(0.7) translateY(12px); }
   65%  { transform: scale(1.06) translateY(0); }
