@@ -7,6 +7,12 @@ import SubjectManager from './SubjectManager';
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
 
+const AVATARS = [
+  '🧑', '👦', '👧', '👨', '👩', '🧒',
+  '🧑‍🎓', '👨‍🎓', '👩‍🎓', '🧑‍💻', '👨‍💻', '👩‍💻',
+  '🐱', '🐶', '🦊', '🐸', '🐼', '🐨',
+];
+
 const VALID_STATUSES   = ['pending', 'studying', 'completed'];
 const VALID_QUEST_STAT = ['pending', 'completed'];
 const VALID_DIFF       = ['easy', 'normal', 'hard'];
@@ -73,16 +79,18 @@ export default function SettingsPanel() {
   const [editChar, setEditChar] = useState(false);
   const [charNickname, setCharNickname] = useState('');
   const [charJob, setCharJob] = useState('');
+  const [charAvatar, setCharAvatar] = useState('🧑');
 
   function startEditChar() {
     setCharNickname(character?.nickname ?? '');
     setCharJob(character?.job ?? '');
+    setCharAvatar(character?.avatar ?? '🧑');
     setEditChar(true);
   }
 
   async function saveChar() {
     if (!charNickname.trim() || !charJob || !character) return;
-    await db.characters.update(character.id, { nickname: charNickname.trim(), job: charJob });
+    await db.characters.update(character.id, { nickname: charNickname.trim(), job: charJob, avatar: charAvatar });
     setEditChar(false);
   }
 
@@ -214,6 +222,25 @@ export default function SettingsPanel() {
                   className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
                 />
               </label>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-gray-700">아바타</span>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {AVATARS.map(em => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => setCharAvatar(em)}
+                      className={`rounded-xl py-1.5 text-xl transition-all border-2 ${
+                        charAvatar === em
+                          ? 'bg-gray-100 border-gray-400'
+                          : 'border-transparent hover:bg-gray-50'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
                 직업
                 <select
@@ -244,7 +271,8 @@ export default function SettingsPanel() {
             </div>
           ) : (
             <div className="px-5 py-4 flex items-center gap-3">
-              <span className="text-2xl">{JOB_ICONS[character.job]}</span>
+              <span className="text-2xl">{character.avatar ?? '🧑'}</span>
+              <span className="text-lg">{JOB_ICONS[character.job]}</span>
               <div>
                 <p className="font-medium text-gray-800">{character.nickname}</p>
                 <p className="text-xs text-gray-400">{JOB_LABELS[character.job]}</p>

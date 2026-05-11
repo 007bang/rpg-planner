@@ -94,7 +94,7 @@ function drawDesk(ctx, dx, dy, dw, dh) {
 }
 
 /* ── 전체 씬 그리기 ──────────────────────────────── */
-function drawScene(ctx, job) {
+function drawScene(ctx, job, avatar) {
   ctx.clearRect(0, 0, CW, CH)
 
   /* 1. 벽 (크림) */
@@ -171,7 +171,8 @@ function drawScene(ctx, job) {
   const R_SPACE = FLOOR_AVAIL / 3
   const ROW_YS = [0, 1, 2].map(r => WALL_H + R_SPACE * r + 18)
 
-  const emoji = JOB_EMOJI[job] ?? '📚'
+  const jobEmoji    = JOB_EMOJI[job] ?? '📚'
+  const personEmoji = avatar ?? '🧑'
 
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
@@ -185,13 +186,13 @@ function drawScene(ctx, job) {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'bottom'
 
-        /* 사람 이모지 — 책상 바로 위에 앉아 있는 것처럼 */
+        /* 아바타 이모지 — 책상 바로 위에 앉아 있는 것처럼 */
         ctx.font = '24px serif'
-        ctx.fillText('🧑', cx, dy - 1)
+        ctx.fillText(personEmoji, cx, dy - 1)
 
         /* 직업 이모지 — 우상단에 작은 뱃지 */
         ctx.font = '13px serif'
-        ctx.fillText(emoji, cx + 16, dy - 22)
+        ctx.fillText(jobEmoji, cx + 16, dy - 22)
       }
     }
   }
@@ -201,13 +202,14 @@ function drawScene(ctx, job) {
 export default function ClassroomCanvas() {
   const canvasRef = useRef(null)
   const characters = useCharacter()
-  const job = characters?.[0]?.job ?? null
+  const job    = characters?.[0]?.job    ?? null
+  const avatar = characters?.[0]?.avatar ?? '🧑'
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    drawScene(canvas.getContext('2d'), job)
-  }, [job])
+    drawScene(canvas.getContext('2d'), job, avatar)
+  }, [job, avatar])
 
   return (
     <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">

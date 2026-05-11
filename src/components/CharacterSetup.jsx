@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { db } from '../db/db';
 
+const AVATARS = [
+  '🧑', '👦', '👧', '👨', '👩', '🧒',
+  '🧑‍🎓', '👨‍🎓', '👩‍🎓', '🧑‍💻', '👨‍💻', '👩‍💻',
+  '🐱', '🐶', '🦊', '🐸', '🐼', '🐨',
+];
+
 const JOBS = [
   {
     id: 'warrior',
@@ -40,11 +46,12 @@ const JOBS = [
 export default function CharacterSetup() {
   const [nickname, setNickname] = useState('');
   const [job, setJob] = useState('');
+  const [avatar, setAvatar] = useState('🧑');
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!nickname.trim() || !job) return;
-    await db.characters.add({ nickname: nickname.trim(), job, coin: 0 });
+    await db.characters.add({ nickname: nickname.trim(), job, coin: 0, avatar });
   }
 
   return (
@@ -68,6 +75,26 @@ export default function CharacterSetup() {
               required
               className="w-full bg-white/10 text-white placeholder-indigo-400 border border-white/20 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-indigo-200 mb-2">아바타 선택</label>
+            <div className="grid grid-cols-6 gap-1.5">
+              {AVATARS.map(em => (
+                <button
+                  key={em}
+                  type="button"
+                  onClick={() => setAvatar(em)}
+                  className={`rounded-xl py-2 text-xl transition-all border-2 ${
+                    avatar === em
+                      ? 'bg-white/20 border-white'
+                      : 'bg-white/5 border-transparent hover:bg-white/10'
+                  }`}
+                >
+                  {em}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
