@@ -181,11 +181,17 @@ function drawScene(ctx, job) {
 
       /* 캐릭터: 가운데 줄(r=1) 중앙 칸(c=1) */
       if (r === 1 && c === 1) {
-        ctx.font = '22px serif'
+        const cx = Math.round(dx + D_W / 2)
         ctx.textAlign = 'center'
         ctx.textBaseline = 'bottom'
-        ctx.fillStyle = '#000'
-        ctx.fillText(emoji, dx + D_W / 2, dy - 2)
+
+        /* 사람 이모지 — 책상 바로 위에 앉아 있는 것처럼 */
+        ctx.font = '24px serif'
+        ctx.fillText('🧑', cx, dy - 1)
+
+        /* 직업 이모지 — 우상단에 작은 뱃지 */
+        ctx.font = '13px serif'
+        ctx.fillText(emoji, cx + 16, dy - 22)
       }
     }
   }
