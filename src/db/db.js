@@ -82,6 +82,14 @@ db.version(10).stores({
   quests:     '++id, title, subject, difficulty, coin, status, date, actualDuration',
 });
 
+db.version(11).stores({
+  studies:    '++id, eventId, date, subject, difficulty, minutes, status',
+  subjects:   '++id, name, color',
+  exams:      '++id, date, subject, range',
+  characters: '++id, nickname, job, coin, avatar, deskRow, deskCol, unlockedAvatars, spentCoins, lastVisitDate, bonusCoins',
+  quests:     '++id, title, subject, difficulty, coin, status, date, actualDuration',
+});
+
 const DEFAULT_SUBJECTS = [
   { name: '수학', color: '#3B82F6' },
   { name: '영어', color: '#10B981' },

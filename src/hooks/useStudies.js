@@ -23,7 +23,12 @@ export function useQuests() {
 
 export function useCoin() {
   return useLiveQuery(async () => {
-    const completed = await db.quests.where('status').equals('completed').toArray();
-    return completed.reduce((sum, q) => sum + (q.coin ?? 0), 0);
+    const [completed, characters] = await Promise.all([
+      db.quests.where('status').equals('completed').toArray(),
+      db.characters.toArray(),
+    ]);
+    const questCoins  = completed.reduce((sum, q) => sum + (q.coin ?? 0), 0);
+    const bonusCoins  = characters[0]?.bonusCoins ?? 0;
+    return questCoins + bonusCoins;
   }, []);
 }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { initDB, db } from './db/db';
 import { useCharacter, useSubjects } from './hooks/useStudies';
+import { useToast } from './hooks/useToast';
 import { useTimer } from './hooks/useTimer';
 import NavBar from './components/NavBar';
 import StudyTimer from './components/StudyTimer';
@@ -24,10 +25,26 @@ function todayStr() {
 export default function App() {
   useEffect(() => { initDB(); }, []);
 
-  const characters = useCharacter();
-  const subjects   = useSubjects() ?? [];
+  const characters        = useCharacter();
+  const subjects          = useSubjects() ?? [];
   const { elapsed, isRunning, start, pause, reset } = useTimer();
   const [timerModal, setTimerModal] = useState({ open: false, key: 0, minutes: 0 });
+  const { msg: toastMsg, show: showToast } = useToast();
+  const attendanceChecked = useRef(false);
+
+  useEffect(() => {
+    if (!characters?.length || attendanceChecked.current) return;
+    attendanceChecked.current = true;
+    const character = characters[0];
+    const today = todayStr();
+    if (character.lastVisitDate !== today) {
+      db.characters.update(character.id, {
+        lastVisitDate: today,
+        bonusCoins: (character.bonusCoins ?? 0) + 1,
+      });
+      showToast('🎊 출석 완료! 🪙+1 코인 획득!');
+    }
+  }, [characters]);
 
   function handleTimerReset() {
     if (elapsed > 0) {
@@ -97,6 +114,11 @@ export default function App() {
         onClose={() => setTimerModal(prev => ({ ...prev, open: false }))}
         initialValues={{ minutes: timerModal.minutes }}
       />
+      {toastMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-rpg-border text-rpg-text text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none whitespace-nowrap border border-rpg-border">
+          {toastMsg}
+        </div>
+      )}
     </>
   );
 }
