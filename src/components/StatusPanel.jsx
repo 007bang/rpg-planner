@@ -12,6 +12,21 @@ const BADGE_LIST = [
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
 
+const LEVELUP_LINES = {
+  warrior: {
+    2: '더 강해졌다! 어떤 시험도 두렵지 않아!',
+    3: '나는 이제 시험의 지배자다! 아무도 막을 수 없어!',
+  },
+  mage: {
+    2: '지식이 쌓일수록 마법도 강해지는 법...',
+    3: '모든 학문이 내 손안에! 완벽한 경지에 올랐다!',
+  },
+  archer: {
+    2: '집중력이 높아졌어! 목표를 절대 놓치지 않겠어!',
+    3: '어떤 문제도 내 화살을 피할 수 없다!',
+  },
+};
+
 function scrollToInfo() {
   document.getElementById('info-section')?.scrollIntoView({ behavior: 'smooth' });
 }
@@ -64,6 +79,25 @@ export default function StatusPanel() {
             <p className="text-xs text-indigo-300 mb-0.5">새 칭호</p>
             <p className="text-xl font-bold">Lv.{level} {levelName}</p>
           </div>
+
+          {character && LEVELUP_LINES[character.job]?.[level] && (
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl shrink-0">{character.avatar ?? JOB_ICONS[character.job]}</span>
+              <div className="relative bg-white/20 rounded-2xl px-4 py-3 flex-1 text-left">
+                <div
+                  className="absolute -left-2 bottom-3 w-0 h-0"
+                  style={{
+                    borderTop: '6px solid transparent',
+                    borderBottom: '6px solid transparent',
+                    borderRight: '8px solid rgba(255,255,255,0.2)',
+                  }}
+                />
+                <p className="text-sm font-medium text-white leading-snug">
+                  &ldquo;{LEVELUP_LINES[character.job][level]}&rdquo;
+                </p>
+              </div>
+            </div>
+          )}
 
           {character && JOB_MULT[character.job] && (
             <div className="bg-white/15 rounded-xl px-4 py-3 mb-4 text-left">
