@@ -76,11 +76,32 @@ export default function SettingsPanel() {
   const availableCoins = earnedCoin - spentCoins;
   const unlockedSet   = new Set(JSON.parse(character?.unlockedAvatars ?? '[]'));
 
-  const [editChar, setEditChar]       = useState(false);
-  const [charNickname, setCharNickname] = useState('');
-  const [charJob, setCharJob]         = useState('');
-  const [charAvatar, setCharAvatar]   = useState('🧑');
+  const [editChar, setEditChar]           = useState(false);
+  const [charNickname, setCharNickname]   = useState('');
+  const [charJob, setCharJob]             = useState('');
+  const [charAvatar, setCharAvatar]       = useState('🧑');
   const [pendingUnlock, setPendingUnlock] = useState(null);
+  const [editBoard, setEditBoard]         = useState(false);
+  const [boardInput, setBoardInput]       = useState('');
+
+  const BOARD_PRICE = 30;
+  const currentBoard = character?.boardMessage ?? '📚 열공 중!';
+
+  function startEditBoard() {
+    setBoardInput(currentBoard);
+    setEditBoard(true);
+  }
+
+  async function saveBoard() {
+    if (!boardInput.trim() || !character) return;
+    if (availableCoins < BOARD_PRICE) { showToast('코인이 부족해요'); return; }
+    await db.characters.update(character.id, {
+      boardMessage: boardInput.trim(),
+      spentCoins: spentCoins + BOARD_PRICE,
+    });
+    setEditBoard(false);
+    showToast('칠판 문구를 변경했습니다!');
+  }
 
   function isUnlocked(em) {
     return FREE_AVATARS.includes(em) || unlockedSet.has(em);
@@ -344,6 +365,65 @@ export default function SettingsPanel() {
                 <p className="font-medium text-rpg-text">{character.nickname}</p>
                 <p className="text-xs text-rpg-muted">{JOB_LABELS[character.job]}</p>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 칠판 문구 */}
+      {character && (
+        <div className="bg-rpg-card rounded-2xl border border-rpg-border shadow-lg mb-4">
+          <div className="px-5 py-4 border-b border-rpg-border flex items-center justify-between">
+            <div>
+              <p className="font-medium text-rpg-text">칠판 문구</p>
+              <p className="text-xs text-rpg-muted mt-0.5">교실 칠판에 표시될 문구 · {BOARD_PRICE}🪙</p>
+            </div>
+            {!editBoard && (
+              <button
+                onClick={startEditBoard}
+                className="min-h-[36px] px-4 rounded-xl bg-rpg-border text-rpg-text text-sm font-medium hover:bg-rpg-border/70 transition-colors"
+              >
+                수정
+              </button>
+            )}
+          </div>
+          {editBoard ? (
+            <div className="px-5 py-4 space-y-3">
+              <label className="flex flex-col gap-1 text-sm font-medium text-rpg-muted">
+                문구 (최대 10글자)
+                <input
+                  type="text"
+                  value={boardInput}
+                  onChange={e => setBoardInput(e.target.value.slice(0, 10))}
+                  maxLength={10}
+                  className="border border-rpg-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
+                />
+                <span className="text-xs text-rpg-muted text-right">{boardInput.length}/10</span>
+              </label>
+              <div className="flex items-center gap-2 bg-rpg-border/50 border border-rpg-border rounded-lg px-3 py-2">
+                <span className="text-sm text-rpg-muted">변경 비용</span>
+                <span className="font-bold text-rpg-gold ml-auto">🪙 {BOARD_PRICE}</span>
+                <span className="text-xs text-rpg-muted">(보유 {availableCoins})</span>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setEditBoard(false)}
+                  className="flex-1 min-h-[40px] rounded-xl border border-rpg-border text-rpg-text text-sm font-medium hover:bg-rpg-border transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={saveBoard}
+                  disabled={!boardInput.trim() || availableCoins < BOARD_PRICE}
+                  className="flex-1 min-h-[40px] rounded-xl bg-rpg-gold text-gray-900 text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {availableCoins < BOARD_PRICE ? '코인 부족' : '저장 (-30🪙)'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="px-5 py-4">
+              <p className="text-rpg-text font-medium">{currentBoard}</p>
             </div>
           )}
         </div>

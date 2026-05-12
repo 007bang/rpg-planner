@@ -91,7 +91,7 @@ function drawDesk(ctx, dx, dy, dw, dh) {
 }
 
 /* ── 전체 씬 그리기 ──────────────────────────────── */
-function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, hoverDesk = null) {
+function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, hoverDesk = null, boardMessage = '📚 열공 중!') {
   ctx.clearRect(0, 0, CW, CH)
 
   /* 벽 */
@@ -149,7 +149,7 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
   ctx.fillStyle = 'rgba(255,255,255,0.60)'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('📚  열공 중!', BB_X + BB_W / 2, BB_Y + BB_H * 0.50)
+  ctx.fillText(boardMessage, BB_X + BB_W / 2, BB_Y + BB_H * 0.50)
 
   /* 책상 3×3 */
   const jobEmoji    = JOB_EMOJI[job] ?? '📚'
@@ -198,16 +198,17 @@ export default function ClassroomCanvas() {
   const dragRef    = useRef({ active: false, x: 0, y: 0, hoverDesk: null })
   const characters = useCharacter()
   const character  = characters?.[0] ?? null
-  const job        = character?.job     ?? null
-  const avatar     = character?.avatar  ?? '🧑'
-  const deskRow    = character?.deskRow ?? 1
-  const deskCol    = character?.deskCol ?? 1
+  const job          = character?.job          ?? null
+  const avatar       = character?.avatar       ?? '🧑'
+  const deskRow      = character?.deskRow      ?? 1
+  const deskCol      = character?.deskCol      ?? 1
+  const boardMessage = character?.boardMessage ?? '📚 열공 중!'
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    drawScene(canvas.getContext('2d'), job, avatar, deskRow, deskCol, null, null)
-  }, [job, avatar, deskRow, deskCol])
+    drawScene(canvas.getContext('2d'), job, avatar, deskRow, deskCol, null, null, boardMessage)
+  }, [job, avatar, deskRow, deskCol, boardMessage])
 
   /* 마우스/터치 → 캔버스 좌표 변환 */
   function toCanvas(e) {
@@ -250,7 +251,7 @@ export default function ClassroomCanvas() {
     dragRef.current.x = x
     dragRef.current.y = y
     dragRef.current.hoverDesk = hoverDesk
-    drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, { x, y }, hoverDesk)
+    drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, { x, y }, hoverDesk, boardMessage)
     e.preventDefault()
   }
 
@@ -264,7 +265,7 @@ export default function ClassroomCanvas() {
       await db.characters.update(character.id, { deskRow: target.r, deskCol: target.c })
       /* useLiveQuery가 재렌더링 → useEffect가 다시 drawScene 호출 */
     } else {
-      drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, null, null)
+      drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, null, null, boardMessage)
     }
   }
 
