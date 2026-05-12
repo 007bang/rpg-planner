@@ -4,8 +4,8 @@ const NAV_ITEMS = [
   { label: '퀘스트', icon: '📜', id: 'section-quest'     },
   { label: '상점',   icon: '🏪', id: 'section-shop'      },
   { label: '스탯',   icon: '💪', id: 'section-char-stat' },
-  { label: '설정',   icon: '⚙️', id: 'section-settings'  },
   { label: '통계',   icon: '📊', id: 'section-charts'    },
+  { label: '설정',   icon: '⚙️', id: 'section-settings'  },
 ];
 
 function formatNavTime(s) {
