@@ -12,18 +12,18 @@ function getDday(dateStr) {
 const MODAL_CLOSED = { open: false, examId: null, subject: '', range: '' };
 
 export default function DdayBanner() {
-  const exams    = useExams()    ?? [];
+  const examsRaw = useExams();
   const subjects = useSubjects() ?? [];
 
   const [modal, setModal] = useState(MODAL_CLOSED);
 
-  const upcoming = useMemo(() =>
-    exams
+  const upcoming = useMemo(() => {
+    const exams = examsRaw ?? [];
+    return exams
       .map(e => ({ ...e, dday: getDday(e.date) }))
       .filter(e => e.dday >= 0)
-      .sort((a, b) => a.dday - b.dday),
-    [exams],
-  );
+      .sort((a, b) => a.dday - b.dday);
+  }, [examsRaw]);
 
   if (upcoming.length === 0) return null;
 

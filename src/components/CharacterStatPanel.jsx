@@ -34,8 +34,8 @@ export default function CharacterStatPanel() {
   const characters = useCharacter();
 
   // ── 모든 훅은 early return 전에 선언 ──────────────
-  const [popupQueue,    setPopupQueue]    = useState([]);
-  const [currentPopup, setCurrentPopup]  = useState(null);
+  const [popupQueue, setPopupQueue] = useState([]);
+  const currentPopup = popupQueue[0] ?? null;
   const prevGradesRef = useRef(null);
   const timerRef      = useRef(null);
 
@@ -96,13 +96,11 @@ export default function CharacterStatPanel() {
   }, [gradeKey]);
 
   useEffect(() => {
-    if (currentPopup !== null || popupQueue.length === 0) return;
-    const [next, ...rest] = popupQueue;
-    setCurrentPopup(next);
-    setPopupQueue(rest);
+    if (popupQueue.length === 0) return;
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setCurrentPopup(null), 3000);
-  }, [currentPopup, popupQueue]);
+    timerRef.current = setTimeout(() => setPopupQueue(q => q.slice(1)), 3000);
+    return () => clearTimeout(timerRef.current);
+  }, [popupQueue]);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
@@ -111,7 +109,7 @@ export default function CharacterStatPanel() {
 
   function closePopup() {
     clearTimeout(timerRef.current);
-    setCurrentPopup(null);
+    setPopupQueue(q => q.slice(1));
   }
 
   return (
@@ -136,8 +134,8 @@ export default function CharacterStatPanel() {
               </span>
             </div>
 
-            {popupQueue.length > 0 && (
-              <p className="text-xs text-indigo-300 mb-3">+{popupQueue.length}개 추가 상승 대기 중</p>
+            {popupQueue.length > 1 && (
+              <p className="text-xs text-indigo-300 mb-3">+{popupQueue.length - 1}개 추가 상승 대기 중</p>
             )}
 
             <div className="h-1 bg-white/20 rounded-full mb-4 overflow-hidden">

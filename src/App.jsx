@@ -65,7 +65,7 @@ export default function App() {
       });
       showToast('🎊 출석 완료! 🪙+1 코인 획득!');
     }
-  }, [characters]);
+  }, [characters, showToast]);
 
   function handleTimerReset() {
     if (elapsed > 0) {

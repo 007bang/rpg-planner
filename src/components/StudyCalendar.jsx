@@ -138,19 +138,23 @@ const EXAM_POPUP_CLOSED  = { open: false, extendedProps: null, position: null };
 const QUEST_POPUP_CLOSED = { open: false, extendedProps: null, position: null };
 
 export default function StudyCalendar({ onStudyComplete }) {
-  const subjects = useSubjects() ?? [];
-  const studies  = useStudies()  ?? [];
-  const exams    = useExams()    ?? [];
-  const quests   = useQuests()   ?? [];
+  const subjectsRaw = useSubjects();
+  const studiesRaw  = useStudies();
+  const examsRaw    = useExams();
+  const questsRaw   = useQuests();
 
-  const fcEvents = useMemo(
-    () => [
+  const subjects = useMemo(() => subjectsRaw ?? [], [subjectsRaw]);
+
+  const fcEvents = useMemo(() => {
+    const studies = studiesRaw ?? [];
+    const exams   = examsRaw   ?? [];
+    const quests  = questsRaw  ?? [];
+    return [
       ...studies.map(s => studyToEvent(s, subjects)),
       ...exams.map(e => examToEvent(e, subjects)),
       ...quests.map(q => questToEvent(q)),
-    ],
-    [studies, subjects, exams, quests],
-  );
+    ];
+  }, [studiesRaw, subjects, examsRaw, questsRaw]);
 
   const [modalState,      setModalState]      = useState(MODAL_CLOSED);
   const [popupState,      setPopupState]      = useState(POPUP_CLOSED);

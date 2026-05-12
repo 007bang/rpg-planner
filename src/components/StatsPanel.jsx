@@ -34,11 +34,6 @@ function localDateStr(date = new Date()) {
   return `${y}-${m}-${d}`;
 }
 
-function monthStr(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  return `${y}-${m}`;
-}
 
 const CHART_TITLE_STYLE = { color: '#1a3a2a', font: { size: 14, weight: 'bold' } };
 const LEGEND_STYLE = { position: 'bottom', labels: { padding: 16, font: { size: 12 }, color: '#4a7a5a' } };
@@ -78,11 +73,12 @@ const LINE_OPTIONS = {
 
 
 export default function StatsPanel() {
-  const allStudies = useStudies();
-  const subjects   = useSubjects() ?? [];
-  const studies    = useMemo(() => allStudies?.filter(s => s.status === 'completed') ?? [], [allStudies]);
+  const allStudies  = useStudies();
+  const subjectsRaw = useSubjects();
+  const studies     = useMemo(() => allStudies?.filter(s => s.status === 'completed') ?? [], [allStudies]);
 
   const pieData = useMemo(() => {
+    const subjects = subjectsRaw ?? [];
     const minutesBySubject = {};
     for (const s of studies) {
       minutesBySubject[s.subject] = (minutesBySubject[s.subject] ?? 0) + s.minutes;
@@ -97,7 +93,7 @@ export default function StatsPanel() {
         borderColor: '#ffffff',
       }],
     };
-  }, [studies, subjects]);
+  }, [studies, subjectsRaw]);
 
   const lineData = useMemo(() => {
     const last7 = Array.from({ length: 7 }, (_, i) => {

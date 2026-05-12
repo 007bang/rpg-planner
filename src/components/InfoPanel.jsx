@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useStudies, useQuests, useCharacter } from '../hooks/useStudies';
 import { computeStats, ACHIEVEMENTS } from '../utils/xp';
 
@@ -22,13 +22,15 @@ const TABS = [
 
 export default function InfoPanel({ open, onClose, defaultTab = 'level' }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
+  const [prevOpen, setPrevOpen]   = useState(open);
   const studies    = useStudies();
   const quests     = useQuests();
   const characters = useCharacter();
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (open) setActiveTab(defaultTab);
-  }, [open, defaultTab]);
+  }
 
   const character         = (characters ?? [])[0] ?? null;
   const savedAchievements = JSON.parse(character?.unlockedAchievements ?? '[]');

@@ -55,7 +55,7 @@ export default function StatusPanel({ onOpenInfo = () => {} }) {
 
   // Achievement popup
   const [achieveQueue, setAchieveQueue] = useState([]);
-  const [achievePopup, setAchievePopup] = useState(null);
+  const achievePopup = achieveQueue[0] ?? null;
   const achieveTimerRef = useRef(null);
 
   const character          = (characters ?? [])[0] ?? null;
@@ -98,18 +98,17 @@ export default function StatusPanel({ onOpenInfo = () => {} }) {
 
     const allIds = [...savedIds, ...newOnes.map(a => a.id)];
     db.characters.update(character.id, { unlockedAchievements: JSON.stringify(allIds) });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAchieveQueue(prev => [...prev, ...newOnes]);
   }, [achieveKey]); // eslint-disable-line
 
-  // Achievement dequeue
+  // Achievement dequeue — timer advances the queue
   useEffect(() => {
-    if (achievePopup !== null || achieveQueue.length === 0) return;
-    const [next, ...rest] = achieveQueue;
-    setAchievePopup(next);
-    setAchieveQueue(rest);
+    if (achieveQueue.length === 0) return;
     clearTimeout(achieveTimerRef.current);
-    achieveTimerRef.current = setTimeout(() => setAchievePopup(null), 3000);
-  }, [achievePopup, achieveQueue]);
+    achieveTimerRef.current = setTimeout(() => setAchieveQueue(q => q.slice(1)), 3000);
+    return () => clearTimeout(achieveTimerRef.current);
+  }, [achieveQueue]);
 
   useEffect(() => () => {
     clearTimeout(levelTimerRef.current);
@@ -123,7 +122,7 @@ export default function StatusPanel({ onOpenInfo = () => {} }) {
 
   function closeAchievePopup() {
     clearTimeout(achieveTimerRef.current);
-    setAchievePopup(null);
+    setAchieveQueue(q => q.slice(1));
   }
 
   if (studies === undefined || quests === undefined || characters === undefined || coin === undefined) return null;
@@ -214,8 +213,8 @@ export default function StatusPanel({ onOpenInfo = () => {} }) {
           <div className="bg-white/20 rounded-xl px-4 py-2 mb-4">
             <p className="text-lg font-bold text-yellow-200">+{achievePopup.xp} XP</p>
           </div>
-          {achieveQueue.length > 0 && (
-            <p className="text-xs text-yellow-200 mb-3">+{achieveQueue.length}개 추가 업적 대기 중</p>
+          {achieveQueue.length > 1 && (
+            <p className="text-xs text-yellow-200 mb-3">+{achieveQueue.length - 1}개 추가 업적 대기 중</p>
           )}
           <div className="h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
             <div
