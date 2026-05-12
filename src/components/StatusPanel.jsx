@@ -62,9 +62,11 @@ export default function StatusPanel() {
   const [achievePopup, setAchievePopup] = useState(null);
   const achieveTimerRef = useRef(null);
 
-  const character = (characters ?? [])[0] ?? null;
+  const character          = (characters ?? [])[0] ?? null;
+  const savedAchievements  = JSON.parse(character?.unlockedAchievements ?? '[]');
+  const availableCoins     = (coin ?? 0) - (character?.spentCoins ?? 0);
   const { totalXP, todayXP, streak, level, levelName, progress, remaining, achievements } =
-    computeStats(studies ?? [], quests ?? [], character?.job ?? null);
+    computeStats(studies ?? [], quests ?? [], character?.job ?? null, savedAchievements);
 
   // Level-up detection
   useEffect(() => {
@@ -242,7 +244,7 @@ export default function StatusPanel() {
           <span className="text-xl">{JOB_ICONS[character.job]}</span>
           <span className="font-bold">{character.nickname}</span>
           <span className="text-xs text-indigo-300 ml-1">{JOB_LABELS[character.job]}</span>
-          <span className="ml-auto text-sm font-bold text-yellow-300">🪙 {coin}</span>
+          <span className="ml-auto text-sm font-bold text-yellow-300">🪙 {availableCoins}</span>
         </div>
       )}
 

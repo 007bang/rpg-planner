@@ -21,8 +21,9 @@ export default function InfoPanel() {
 
   if (studies === undefined || quests === undefined || characters === undefined) return null;
 
-  const character = characters[0] ?? null;
-  const { level, achievements } = computeStats(studies, quests, character?.job ?? null);
+  const character         = characters[0] ?? null;
+  const savedAchievements = JSON.parse(character?.unlockedAchievements ?? '[]');
+  const { level, achievements } = computeStats(studies, quests, character?.job ?? null, savedAchievements);
 
   const categories = [...new Set(ACHIEVEMENTS.map(a => a.category))];
 
