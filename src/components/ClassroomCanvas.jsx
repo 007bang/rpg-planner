@@ -23,7 +23,7 @@ const BB_H = Math.round(WALL_H * 0.60) // 94
 const CLOCK_W = 150
 const CLOCK_H = 28
 const CLOCK_X = BB_X + Math.round((BB_W - CLOCK_W) / 2)
-const CLOCK_Y = BB_Y + 10
+const CLOCK_Y = BB_Y - Math.round(CLOCK_H / 2)   // 칠판 상단 테두리에 걸침
 
 /* ── 책상 레이아웃 ──────────────────────────────── */
 const D_W = 58, D_H = 22
@@ -163,23 +163,22 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
   ctx.fillStyle = '#081408'
   ctx.fillRect(CLOCK_X, CLOCK_Y, CLOCK_W, CLOCK_H)
 
-  ctx.strokeStyle = isRunning ? '#22c55e' : '#374151'
+  ctx.strokeStyle = isRunning ? '#ef4444' : '#374151'
   ctx.lineWidth = 1.5
   ctx.strokeRect(CLOCK_X, CLOCK_Y, CLOCK_W, CLOCK_H)
 
   ctx.font = 'bold 16px monospace'
-  ctx.fillStyle = isRunning ? '#4ade80' : '#6b7280'
+  ctx.fillStyle = isRunning ? '#fca5a5' : '#6b7280'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(formatElapsed(elapsed), CLOCK_X + CLOCK_W / 2, CLOCK_Y + CLOCK_H / 2)
 
-  /* 칠판 문구 (시계 아래) */
-  const msgY = Math.round((CLOCK_Y + CLOCK_H + BB_Y + BB_H) / 2)
+  /* 칠판 문구 (칠판 중앙) */
   ctx.font = 'bold 15px sans-serif'
   ctx.fillStyle = 'rgba(255,255,255,0.60)'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(boardMessage, BB_X + BB_W / 2, msgY)
+  ctx.fillText(boardMessage, BB_X + BB_W / 2, BB_Y + BB_H * 0.50)
 
   /* 책상 3×3 */
   const jobEmoji    = JOB_EMOJI[job] ?? '📚'
