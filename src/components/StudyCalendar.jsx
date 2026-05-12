@@ -137,7 +137,7 @@ const EXAM_MODAL_CLOSED  = { open: false, date: '', key: 0, examId: null, initia
 const EXAM_POPUP_CLOSED  = { open: false, extendedProps: null, position: null };
 const QUEST_POPUP_CLOSED = { open: false, extendedProps: null, position: null };
 
-export default function StudyCalendar() {
+export default function StudyCalendar({ onStudyComplete }) {
   const subjects = useSubjects() ?? [];
   const studies  = useStudies()  ?? [];
   const exams    = useExams()    ?? [];
@@ -286,7 +286,11 @@ export default function StudyCalendar() {
   }
 
   async function handleSetStatus(newStatus) {
-    await db.studies.update(popupState.extendedProps.studyId, { status: newStatus });
+    const { studyId, minutes, difficulty } = popupState.extendedProps;
+    await db.studies.update(studyId, { status: newStatus });
+    if (newStatus === 'completed') {
+      onStudyComplete?.({ minutes, difficulty });
+    }
     setPopupState(POPUP_CLOSED);
   }
 

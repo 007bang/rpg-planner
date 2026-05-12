@@ -3,7 +3,7 @@ export const JOB_MULT = {
   mage:    { hard: 1.3, normal: 1.2, easy: 1.0 },
   archer:  { hard: 1.5, normal: 1.1, easy: 0.9 },
 };
-const DEFAULT_MULT = { hard: 1.5, normal: 1.0, easy: 0.8 };
+export const DEFAULT_MULT = { hard: 1.5, normal: 1.0, easy: 0.8 };
 
 const DAY_CAP = 400;
 

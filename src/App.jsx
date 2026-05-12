@@ -3,6 +3,7 @@ import { initDB, db } from './db/db';
 import { useCharacter, useSubjects } from './hooks/useStudies';
 import { useToast } from './hooks/useToast';
 import { useTimer } from './hooks/useTimer';
+import { JOB_MULT, DEFAULT_MULT } from './utils/xp';
 import NavBar from './components/NavBar';
 import StudyTimer from './components/StudyTimer';
 import ClassroomCanvas from './components/ClassroomCanvas';
@@ -31,6 +32,14 @@ export default function App() {
   const [timerModal, setTimerModal] = useState({ open: false, key: 0, minutes: 0 });
   const { msg: toastMsg, show: showToast } = useToast();
   const attendanceChecked = useRef(false);
+  const [xpFloat, setXpFloat] = useState(null); // { amount, key }
+
+  function handleStudyComplete({ minutes, difficulty }) {
+    const job = characters?.[0]?.job ?? null;
+    const mult = (job && JOB_MULT[job]) ? JOB_MULT[job] : DEFAULT_MULT;
+    const xp = Math.round(minutes * (mult[difficulty] ?? 1.0));
+    setXpFloat({ amount: xp, key: Date.now() });
+  }
 
   useEffect(() => {
     if (!characters?.length || attendanceChecked.current) return;
@@ -89,7 +98,7 @@ export default function App() {
         />
         <ClassroomCanvas />
         <div id="section-calendar" className="scroll-mt-16">
-          <StudyCalendar />
+          <StudyCalendar onStudyComplete={handleStudyComplete} />
         </div>
         <div id="section-quest" className="scroll-mt-16">
           <QuestPanel />
@@ -114,6 +123,16 @@ export default function App() {
         onClose={() => setTimerModal(prev => ({ ...prev, open: false }))}
         initialValues={{ minutes: timerModal.minutes }}
       />
+      {xpFloat && (
+        <div
+          key={xpFloat.key}
+          className="fixed left-1/2 -translate-x-1/2 text-yellow-400 font-bold text-2xl pointer-events-none z-50 drop-shadow-lg"
+          style={{ top: '120px', animation: 'xp-float 1s ease-out forwards' }}
+          onAnimationEnd={() => setXpFloat(null)}
+        >
+          +{xpFloat.amount} XP
+        </div>
+      )}
       {toastMsg && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-rpg-border text-rpg-text text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none whitespace-nowrap border border-rpg-border">
           {toastMsg}
