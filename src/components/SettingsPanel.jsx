@@ -4,6 +4,7 @@ import { useToast } from '../hooks/useToast';
 import { useCharacter, useCoin } from '../hooks/useStudies';
 import SubjectManager from './SubjectManager';
 import { FREE_AVATARS, SHOP_CATEGORIES, AVATAR_PRICE } from '../constants/avatars';
+import { BG_THEMES, ACCENT_THEMES, THEME_PRICE } from '../constants/themes';
 
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
@@ -83,9 +84,43 @@ export default function SettingsPanel() {
   const [pendingUnlock, setPendingUnlock] = useState(null);
   const [editBoard, setEditBoard]         = useState(false);
   const [boardInput, setBoardInput]       = useState('');
+  const [pendingTheme, setPendingTheme]   = useState(null); // { type:'bg'|'accent', id, label }
 
   const BOARD_PRICE = 10;
   const currentBoard = character?.boardMessage ?? '📚 열공 중!';
+
+  const unlockedThemesSet = new Set([
+    ...BG_THEMES.filter(t => t.free).map(t => t.id),
+    ...ACCENT_THEMES.filter(t => t.free).map(t => t.id),
+    ...JSON.parse(character?.unlockedThemes ?? '[]'),
+  ]);
+
+  function isThemeUnlocked(id) { return unlockedThemesSet.has(id); }
+
+  async function handleThemeClick(type, theme) {
+    if (!character) return;
+    if (isThemeUnlocked(theme.id)) {
+      await db.characters.update(character.id, {
+        [type === 'bg' ? 'themeBg' : 'themeAccent']: theme.id,
+      });
+    } else {
+      setPendingTheme({ type, ...theme });
+    }
+  }
+
+  async function handleThemeUnlockConfirm() {
+    if (!pendingTheme || !character) return;
+    if (availableCoins < THEME_PRICE) { showToast('코인이 부족해요'); setPendingTheme(null); return; }
+    const next = new Set(JSON.parse(character?.unlockedThemes ?? '[]'));
+    next.add(pendingTheme.id);
+    await db.characters.update(character.id, {
+      unlockedThemes: JSON.stringify([...next]),
+      spentCoins: spentCoins + THEME_PRICE,
+      [pendingTheme.type === 'bg' ? 'themeBg' : 'themeAccent']: pendingTheme.id,
+    });
+    showToast(`${pendingTheme.label} 테마를 해금했습니다!`);
+    setPendingTheme(null);
+  }
 
   function startEditBoard() {
     setBoardInput(currentBoard);
@@ -429,6 +464,79 @@ export default function SettingsPanel() {
         </div>
       )}
 
+      {/* 테마 커스텀 */}
+      {character && (
+        <div className="bg-rpg-card rounded-2xl border border-rpg-border shadow-lg mb-4">
+          <div className="px-5 py-4 border-b border-rpg-border">
+            <p className="font-medium text-rpg-text">테마 커스텀</p>
+            <p className="text-xs text-rpg-muted mt-0.5">배경색·포인트색 변경 · 유료 {THEME_PRICE}🪙 · 보유 {availableCoins}🪙</p>
+          </div>
+          <div className="px-5 py-4 space-y-4">
+            {/* 배경색 */}
+            <div>
+              <p className="text-xs font-medium text-rpg-muted mb-2">배경색</p>
+              <div className="grid grid-cols-5 gap-2">
+                {BG_THEMES.map(t => {
+                  const unlocked = isThemeUnlocked(t.id);
+                  const selected = (character.themeBg ?? BG_THEMES[0].id) === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      title={t.label}
+                      onClick={() => handleThemeClick('bg', t)}
+                      className="relative flex flex-col items-center gap-1 group"
+                    >
+                      <span
+                        className={`w-10 h-10 rounded-full border-2 transition-all ${
+                          selected ? 'ring-2 ring-offset-2 ring-rpg-purple border-white scale-110' : 'border-rpg-border hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: t.id }}
+                      >
+                        {!unlocked && (
+                          <span className="absolute inset-0 flex items-center justify-center text-[11px] leading-none">🔒</span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-rpg-muted leading-none">{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 포인트색 */}
+            <div>
+              <p className="text-xs font-medium text-rpg-muted mb-2">포인트색</p>
+              <div className="grid grid-cols-5 gap-2">
+                {ACCENT_THEMES.map(t => {
+                  const unlocked = isThemeUnlocked(t.id);
+                  const selected = (character.themeAccent ?? ACCENT_THEMES[0].id) === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      title={t.label}
+                      onClick={() => handleThemeClick('accent', t)}
+                      className="relative flex flex-col items-center gap-1 group"
+                    >
+                      <span
+                        className={`w-10 h-10 rounded-full border-2 transition-all ${
+                          selected ? 'ring-2 ring-offset-2 ring-rpg-purple border-white scale-110' : 'border-rpg-border hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: t.id }}
+                      >
+                        {!unlocked && (
+                          <span className="absolute inset-0 flex items-center justify-center text-[11px] leading-none">🔒</span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-rpg-muted leading-none">{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 과목 관리 */}
       <div className="bg-rpg-card rounded-2xl border border-rpg-border shadow-lg mb-4">
         <div className="px-5 py-4 border-b border-rpg-border">
@@ -522,6 +630,44 @@ export default function SettingsPanel() {
                 className="flex-1 min-h-[44px] rounded-xl bg-rpg-gold text-gray-900 font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
               >
                 {availableCoins < AVATAR_PRICE ? '코인 부족' : '해금!'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 테마 해금 확인 모달 */}
+      {pendingTheme && (
+        <div
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+          onClick={() => setPendingTheme(null)}
+        >
+          <div
+            className="bg-rpg-card rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl border border-rpg-border text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div
+              className="w-14 h-14 rounded-full mx-auto mb-3 border-2 border-rpg-border"
+              style={{ backgroundColor: pendingTheme.id }}
+            />
+            <p className="font-bold text-rpg-text mb-1">{pendingTheme.label} 해금</p>
+            <p className="text-sm text-rpg-muted mb-1">{THEME_PRICE}코인으로 해금할까요?</p>
+            <p className="text-xs text-rpg-muted mb-5">
+              보유 코인: <span className="font-bold text-rpg-gold">🪙 {availableCoins}</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPendingTheme(null)}
+                className="flex-1 min-h-[44px] rounded-xl border border-rpg-border text-rpg-text font-medium hover:bg-rpg-border transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleThemeUnlockConfirm}
+                disabled={availableCoins < THEME_PRICE}
+                className="flex-1 min-h-[44px] rounded-xl bg-rpg-gold text-gray-900 font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {availableCoins < THEME_PRICE ? '코인 부족' : '해금!'}
               </button>
             </div>
           </div>

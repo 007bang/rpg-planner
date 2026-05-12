@@ -4,6 +4,7 @@ import { useCharacter, useSubjects } from './hooks/useStudies';
 import { useToast } from './hooks/useToast';
 import { useTimer } from './hooks/useTimer';
 import { JOB_MULT, DEFAULT_MULT } from './utils/xp';
+import { applyTheme } from './constants/themes';
 import NavBar from './components/NavBar';
 import StudyTimer from './components/StudyTimer';
 import ClassroomCanvas from './components/ClassroomCanvas';
@@ -40,6 +41,10 @@ export default function App() {
     const xp = Math.round(minutes * (mult[difficulty] ?? 1.0));
     setXpFloat({ amount: xp, key: Date.now() });
   }
+
+  useEffect(() => {
+    applyTheme(characters?.[0] ?? null);
+  }, [characters]);
 
   useEffect(() => {
     if (!characters?.length || attendanceChecked.current) return;
