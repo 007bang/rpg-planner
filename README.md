@@ -1,16 +1,68 @@
-# React + Vite
+# 시험기간 RPG 플래너
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+공부를 RPG 게임처럼 즐기는 플래너
 
-Currently, two official plugins are available:
+🔗 **배포 링크**: https://rpg-planner-three.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 기술 스택
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| 분류 | 기술 |
+|------|------|
+| 프레임워크 | React 19, Vite 8 |
+| 스타일 | Tailwind CSS v4 |
+| 캘린더 | FullCalendar v6 |
+| 차트 | Chart.js v4 + react-chartjs-2 |
+| DB | Dexie v4 (IndexedDB) |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 주요 기능
+
+### 🏆 캐릭터 & 레벨 시스템
+- 직업 선택 (전사 / 마법사 / 궁수) — 직업마다 난이도별 XP 배율이 다름
+- 10단계 레벨 시스템 (견습 모험가 → 시험의 전설)
+- 연속 학습 streak 보너스 (3일 ×1.1, 7일 ×1.2)
+- 하루 XP 상한 400 XP
+
+### 📅 학습 캘린더
+- 날짜 클릭으로 공부 기록 추가 (과목 / 난이도 / 시간 / 메모)
+- 길게 누르기로 시험 일정 추가
+- 드래그 앤 드롭으로 날짜 이동
+- 공휴일 자동 표시 (2025~2026 한국 법정공휴일)
+
+### ⏱ 공부 타이머
+- 칠판 UI 내장 타이머 (시작 / 일시정지 / 완료)
+- 타이머 완료 시 공부 기록 자동 저장 모달
+
+### 📜 퀘스트
+- 퀘스트 추가 / 완료 / 삭제
+- 완료 시 코인 보상
+
+### 🛍 상점
+- 코인으로 아바타 · 칠판 문구 · 테마 구매
+- 출석 체크 시 매일 코인 1개 지급
+
+### 📊 통계
+- 최근 7일 일별 공부시간 꺾은선 그래프
+- 과목별 공부 비율 파이차트
+- 주간 리포트
+
+### 🏅 업적
+- 12개 업적 (학습 / 연속 / 퀘스트 / 레벨 카테고리)
+- 달성 시 XP 보너스 지급 및 팝업 알림
+
+### 💪 캐릭터 스탯
+- 체력 / 지능 / 집중력 / 도전력 / 성실함 5개 스탯
+- 학습 데이터 기반 D ~ S 등급 자동 산정
+- 등급 상승 시 팝업 알림
+
+---
+
+## 로컬 실행
+
+```bash
+npm install
+npm run dev
+```
