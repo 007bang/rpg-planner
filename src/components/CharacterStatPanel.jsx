@@ -33,17 +33,20 @@ export default function CharacterStatPanel() {
   const quests     = useQuests();
   const characters = useCharacter();
 
-  const [popupQueue, setPopupQueue]   = useState([]);
-  const [currentPopup, setCurrentPopup] = useState(null);
+  // ── 모든 훅은 early return 전에 선언 ──────────────
+  const [popupQueue,    setPopupQueue]    = useState([]);
+  const [currentPopup, setCurrentPopup]  = useState(null);
   const prevGradesRef = useRef(null);
   const timerRef      = useRef(null);
 
-  if (studies === undefined || quests === undefined || characters === undefined) return null;
+  // 데이터가 없을 때도 안전하게 계산
+  const character   = characters?.[0] ?? null;
+  const safeStudies = studies  ?? [];
+  const safeQuests  = quests   ?? [];
 
-  const character = characters[0] ?? null;
-  const { totalXP, streak } = computeStats(studies, character?.job ?? null);
+  const { totalXP, streak } = computeStats(safeStudies, character?.job ?? null);
 
-  const completed = studies.filter(s => s.status === 'completed');
+  const completed = safeStudies.filter(s => s.status === 'completed');
   const minutesByDate = {};
   for (const s of completed) {
     minutesByDate[s.date] = (minutesByDate[s.date] ?? 0) + s.minutes;
@@ -53,29 +56,34 @@ export default function CharacterStatPanel() {
   const avgMinutes  = studyDays > 0 ? Math.round(totalMins / studyDays) : 0;
   const hardCount   = completed.filter(s => s.difficulty === 'hard').length;
 
-  const totalQuests     = quests.length;
-  const completedQuests = quests.filter(q => q.status === 'completed').length;
+  const totalQuests     = safeQuests.length;
+  const completedQuests = safeQuests.filter(q => q.status === 'completed').length;
   const diligencePct    = totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
 
   const STATS = [
-    { icon: '💪', name: '체력',   value: avgMinutes,   grade: grade(avgMinutes,   [31, 61, 121, 181]),  display: `${avgMinutes}분/일`              },
-    { icon: '🧠', name: '지능',   value: totalXP,      grade: grade(totalXP,      [300, 700, 1100, 1500]), display: `${totalXP.toLocaleString()} XP` },
-    { icon: '🎯', name: '집중력', value: streak,       grade: grade(streak,       [1, 3, 7, 14]),        display: `${streak}일`                    },
-    { icon: '⚡', name: '도전력', value: hardCount,    grade: grade(hardCount,    [1, 5, 10, 20]),       display: `${hardCount}개`                  },
-    { icon: '🍀', name: '성실함', value: diligencePct, grade: grade(diligencePct, [20, 50, 75, 90]),     display: `${diligencePct}%`                },
+    { icon: '💪', name: '체력',   grade: grade(avgMinutes,   [31, 61, 121, 181]),    display: `${avgMinutes}분/일`              },
+    { icon: '🧠', name: '지능',   grade: grade(totalXP,      [300, 700, 1100, 1500]), display: `${totalXP.toLocaleString()} XP` },
+    { icon: '🎯', name: '집중력', grade: grade(streak,       [1, 3, 7, 14]),          display: `${streak}일`                    },
+    { icon: '⚡', name: '도전력', grade: grade(hardCount,    [1, 5, 10, 20]),         display: `${hardCount}개`                  },
+    { icon: '🍀', name: '성실함', grade: grade(diligencePct, [20, 50, 75, 90]),       display: `${diligencePct}%`                },
   ];
 
-  const gradeKey = STATS.map(s => `${s.name}:${s.grade}`).join(',');
+  // 데이터 로드 전엔 빈 문자열 → useEffect 내에서 무시
+  const dataReady = studies !== undefined && quests !== undefined && characters !== undefined;
+  const gradeKey  = dataReady ? STATS.map(s => `${s.name}:${s.grade}`).join(',') : '';
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    if (!gradeKey) return;
+
     const currentGrades = Object.fromEntries(STATS.map(s => [s.name, s.grade]));
 
     if (prevGradesRef.current !== null) {
-      const upgrades = STATS.filter(s => {
-        const prev = prevGradesRef.current[s.name];
-        return prev !== undefined && GRADE_ORDER[s.grade] > GRADE_ORDER[prev];
-      }).map(s => ({ icon: s.icon, name: s.name, prevGrade: prevGradesRef.current[s.name], newGrade: s.grade }));
+      const upgrades = STATS
+        .filter(s => {
+          const prev = prevGradesRef.current[s.name];
+          return prev !== undefined && GRADE_ORDER[s.grade] > GRADE_ORDER[prev];
+        })
+        .map(s => ({ icon: s.icon, name: s.name, prevGrade: prevGradesRef.current[s.name], newGrade: s.grade }));
 
       if (upgrades.length > 0) {
         setPopupQueue(prev => [...prev, ...upgrades]);
@@ -83,7 +91,8 @@ export default function CharacterStatPanel() {
     }
 
     prevGradesRef.current = currentGrades;
-  }, [gradeKey]); // gradeKey가 바뀔 때만 비교
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gradeKey]);
 
   useEffect(() => {
     if (currentPopup !== null || popupQueue.length === 0) return;
@@ -96,6 +105,9 @@ export default function CharacterStatPanel() {
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
+  // ── early return은 훅 선언 이후 ──────────────────
+  if (!dataReady) return null;
+
   function closePopup() {
     clearTimeout(timerRef.current);
     setCurrentPopup(null);
@@ -103,7 +115,6 @@ export default function CharacterStatPanel() {
 
   return (
     <>
-      {/* 등급 상승 축하 팝업 */}
       {currentPopup && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div
