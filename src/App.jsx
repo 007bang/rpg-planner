@@ -16,7 +16,6 @@ import QuestPanel from './components/QuestPanel';
 import CharacterStatPanel from './components/CharacterStatPanel';
 import ShopPanel from './components/ShopPanel';
 import SettingsPanel from './components/SettingsPanel';
-import InfoPanel from './components/InfoPanel';
 import CharacterSetup from './components/CharacterSetup';
 
 function todayStr() {
@@ -115,9 +114,6 @@ export default function App() {
         </div>
         <div id="section-shop" className="scroll-mt-16">
           <ShopPanel />
-        </div>
-        <div>
-          <InfoPanel />
         </div>
         <div id="section-settings" className="scroll-mt-16">
           <SettingsPanel />

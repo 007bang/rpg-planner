@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useStudies, useQuests, useCharacter, useCoin } from '../hooks/useStudies';
 import { computeStats, JOB_MULT, ACHIEVEMENTS } from '../utils/xp';
 import { db } from '../db/db';
+import InfoPanel from './InfoPanel';
 
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
@@ -42,10 +43,6 @@ const LEVELUP_LINES = {
   },
 };
 
-function scrollToInfo() {
-  document.getElementById('info-section')?.scrollIntoView({ behavior: 'smooth' });
-}
-
 export default function StatusPanel() {
   const studies    = useStudies();
   const quests     = useQuests();
@@ -56,6 +53,10 @@ export default function StatusPanel() {
   const [levelUpModal, setLevelUpModal] = useState(false);
   const prevLevelRef  = useRef(null);
   const levelTimerRef = useRef(null);
+
+  // InfoPanel modal
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [infoTab,  setInfoTab]  = useState('level');
 
   // Achievement popup
   const [achieveQueue, setAchieveQueue] = useState([]);
@@ -256,7 +257,7 @@ export default function StatusPanel() {
           </p>
           <h2
             className="text-xl font-bold leading-tight cursor-pointer hover:text-indigo-200 transition-colors"
-            onClick={scrollToInfo}
+            onClick={() => { setInfoTab('level'); setInfoOpen(true); }}
             title="레벨 · 업적 정보 보기"
           >
             {levelName} ›
@@ -319,7 +320,7 @@ export default function StatusPanel() {
       {/* 업적 요약 */}
       <div
         className="border-t border-white/10 pt-4 cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={scrollToInfo}
+        onClick={() => { setInfoTab('achieve'); setInfoOpen(true); }}
         title="업적 목록 보기"
       >
         <div className="flex items-center justify-between mb-2">
@@ -342,6 +343,8 @@ export default function StatusPanel() {
         </div>
       </div>
     </div>
+
+    <InfoPanel open={infoOpen} onClose={() => setInfoOpen(false)} defaultTab={infoTab} />
     </>
   );
 }
