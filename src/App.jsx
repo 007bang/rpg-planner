@@ -96,14 +96,16 @@ export default function App() {
   return (
     <>
       <NavBar timerElapsed={elapsed} timerRunning={isRunning} />
-      <div className="max-w-2xl mx-auto pb-16 flex flex-col gap-8">
-        <ClassroomCanvas
-          elapsed={elapsed}
-          isRunning={isRunning}
-          onStart={start}
-          onPause={pause}
-          onReset={handleTimerReset}
-        />
+      <div className="max-w-2xl mx-auto pb-16 flex flex-col gap-12">
+        <div className="pt-4">
+          <ClassroomCanvas
+            elapsed={elapsed}
+            isRunning={isRunning}
+            onStart={start}
+            onPause={pause}
+            onReset={handleTimerReset}
+          />
+        </div>
         <div id="section-status">
           <StatusPanel onOpenInfo={handleOpenInfo} />
           <DdayBanner />
