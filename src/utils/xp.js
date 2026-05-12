@@ -8,9 +8,16 @@ export const DEFAULT_MULT = { hard: 1.5, normal: 1.0, easy: 0.8 };
 const DAY_CAP = 400;
 
 const LEVELS = [
-  { level: 1, name: '수습 공부러',   min: 0,    next: 500  },
-  { level: 2, name: '성실한 학습자', min: 500,  next: 1500 },
-  { level: 3, name: '시험의 지배자', min: 1500, next: null },
+  { level: 1,  name: '견습 모험가',   min: 0,     next: 200   },
+  { level: 2,  name: '초보 학습자',   min: 200,   next: 500   },
+  { level: 3,  name: '성실한 학습자', min: 500,   next: 1000  },
+  { level: 4,  name: '숙련된 탐구자', min: 1000,  next: 1500  },
+  { level: 5,  name: '지식의 수호자', min: 1500,  next: 2500  },
+  { level: 6,  name: '현명한 전략가', min: 2500,  next: 4000  },
+  { level: 7,  name: '전설의 학자',   min: 4000,  next: 6000  },
+  { level: 8,  name: '마스터',        min: 6000,  next: 9000  },
+  { level: 9,  name: '그랜드마스터',  min: 9000,  next: 12000 },
+  { level: 10, name: '시험의 전설',   min: 12000, next: null  },
 ];
 
 function localDateStr(date = new Date()) {
