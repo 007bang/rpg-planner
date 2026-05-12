@@ -20,8 +20,8 @@ const BB_Y = 12
 const BB_H = Math.round(WALL_H * 0.60) // 94
 
 /* ── 전자시계 영역 ─────────────────────────────── */
-const CLOCK_W = 150
-const CLOCK_H = 28
+const CLOCK_W = 176
+const CLOCK_H = 34
 const CLOCK_X = BB_X + Math.round((BB_W - CLOCK_W) / 2)
 const CLOCK_Y = BB_Y - Math.round(CLOCK_H / 2)   // 칠판 상단 테두리에 걸침
 
@@ -167,7 +167,7 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
   ctx.lineWidth = 1.5
   ctx.strokeRect(CLOCK_X, CLOCK_Y, CLOCK_W, CLOCK_H)
 
-  ctx.font = 'bold 16px monospace'
+  ctx.font = 'bold 20px monospace'
   ctx.fillStyle = isRunning ? '#fca5a5' : '#6b7280'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
