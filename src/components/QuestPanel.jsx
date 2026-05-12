@@ -21,15 +21,13 @@ function formatDate(dateStr) {
   return `${y}. ${Number(m)}. ${Number(d)}.`;
 }
 
-const MODAL_CLOSED    = { open: false, questId: null, title: '', difficulty: '', date: '' };
-const DURATION_CLOSED = { open: false, quest: null, hours: 0, minutes: 0 };
+const MODAL_CLOSED = { open: false, questId: null, title: '', difficulty: '', date: '' };
 
 export default function QuestPanel() {
   const quests = useQuests() ?? [];
 
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const [modal, setModal] = useState(MODAL_CLOSED);
-  const [durationModal, setDurationModal] = useState(DURATION_CLOSED);
 
   const isEdit = !!modal.questId;
   const coinReward = COIN_BY_DIFF[modal.difficulty] ?? 0;
@@ -69,20 +67,10 @@ export default function QuestPanel() {
 
   async function handleToggle(quest) {
     if (quest.status === 'completed') {
-      await db.quests.update(quest.id, { status: 'pending', actualDuration: null });
+      await db.quests.update(quest.id, { status: 'pending' });
     } else {
-      setDurationModal({ open: true, quest, hours: 0, minutes: 0 });
+      await db.quests.update(quest.id, { status: 'completed' });
     }
-  }
-
-  async function handleDurationSave() {
-    const totalMinutes = durationModal.hours * 60 + durationModal.minutes;
-    if (totalMinutes < 1) return;
-    await db.quests.update(durationModal.quest.id, {
-      status: 'completed',
-      actualDuration: totalMinutes,
-    });
-    setDurationModal(DURATION_CLOSED);
   }
 
   async function handleDelete(quest) {
@@ -174,80 +162,6 @@ export default function QuestPanel() {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* 소요 시간 입력 모달 */}
-      {durationModal.open && (
-        <div
-          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
-          onClick={() => setDurationModal(DURATION_CLOSED)}
-        >
-          <div
-            className="bg-rpg-card rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-rpg-border"
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 className="text-lg font-bold mb-1 text-rpg-text">⏱ 실제 소요 시간</h2>
-            <p className="text-sm text-rpg-muted mb-5">
-              &quot;{durationModal.quest?.title}&quot; 완료까지 얼마나 걸렸나요?
-            </p>
-
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="flex flex-col items-center gap-1">
-                <label className="text-xs font-medium text-rpg-muted">시간</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={23}
-                  value={durationModal.hours}
-                  onChange={e =>
-                    setDurationModal(prev => ({
-                      ...prev,
-                      hours: Math.min(23, Math.max(0, Number(e.target.value))),
-                    }))
-                  }
-                  className="w-20 text-center text-2xl font-bold border-2 border-rpg-border rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
-                />
-              </div>
-              <span className="text-2xl font-bold text-rpg-muted mt-5">:</span>
-              <div className="flex flex-col items-center gap-1">
-                <label className="text-xs font-medium text-rpg-muted">분</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={59}
-                  value={durationModal.minutes}
-                  onChange={e =>
-                    setDurationModal(prev => ({
-                      ...prev,
-                      minutes: Math.min(59, Math.max(0, Number(e.target.value))),
-                    }))
-                  }
-                  className="w-20 text-center text-2xl font-bold border-2 border-rpg-border rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
-                />
-              </div>
-            </div>
-
-            {durationModal.hours * 60 + durationModal.minutes < 1 && (
-              <p className="text-center text-xs text-rpg-red mb-3">최소 1분 이상 입력해주세요</p>
-            )}
-
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => setDurationModal(DURATION_CLOSED)}
-                className="flex-1 min-h-[44px] rounded-xl border border-rpg-border text-rpg-text font-medium hover:bg-rpg-border transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleDurationSave}
-                disabled={durationModal.hours * 60 + durationModal.minutes < 1}
-                className="flex-1 min-h-[44px] rounded-xl bg-rpg-purple text-white font-medium hover:bg-purple-700 transition-colors disabled:opacity-40"
-              >
-                완료 저장
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
