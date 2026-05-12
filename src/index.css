@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
-@theme {
-  --color-rpg-bg:     #f0faf5;
-  --color-rpg-card:   #ffffff;
-  --color-rpg-border: #a7f3d0;
-  --color-rpg-text:   #1a3a2a;
-  --color-rpg-muted:  #4a7a5a;
-  --color-rpg-gold:   #f0a500;
-  --color-rpg-purple: #7c3aed;
-  --color-rpg-green:  #10b981;
-  --color-rpg-red:    #ef4444;
-}
-
+/* ── RPG 민트 테마 CSS 변수 ─────────────────────── */
 :root {
+  --rpg-bg:     #f0faf5;
+  --rpg-card:   #ffffff;
+  --rpg-border: #a7f3d0;
+  --rpg-text:   #1a3a2a;
+  --rpg-muted:  #4a7a5a;
+  --rpg-gold:   #f0a500;
+  --rpg-purple: #7c3aed;
+  --rpg-green:  #10b981;
+  --rpg-red:    #ef4444;
+
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -20,87 +19,139 @@
 
 body {
   margin: 0;
-  background-color: #f0faf5;
-  color: #1a3a2a;
+  background-color: var(--rpg-bg);
+  color: var(--rpg-text);
 }
+
+/* ── rpg-* 유틸리티 클래스 (Tailwind @layer 바깥에서 정의) ── */
+
+/* background */
+.bg-rpg-bg     { background-color: var(--rpg-bg); }
+.bg-rpg-card   { background-color: var(--rpg-card); }
+.bg-rpg-border { background-color: var(--rpg-border); }
+.bg-rpg-gold   { background-color: var(--rpg-gold); }
+.bg-rpg-purple { background-color: var(--rpg-purple); }
+.bg-rpg-green  { background-color: var(--rpg-green); }
+.bg-rpg-red    { background-color: var(--rpg-red); }
+
+/* background opacity variants */
+.bg-rpg-border\/40 { background-color: color-mix(in srgb, var(--rpg-border) 40%, transparent); }
+.bg-rpg-border\/50 { background-color: color-mix(in srgb, var(--rpg-border) 50%, transparent); }
+.bg-rpg-green\/10  { background-color: color-mix(in srgb, var(--rpg-green)  10%, transparent); }
+.bg-rpg-purple\/20 { background-color: color-mix(in srgb, var(--rpg-purple) 20%, transparent); }
+
+/* text */
+.text-rpg-text   { color: var(--rpg-text); }
+.text-rpg-muted  { color: var(--rpg-muted); }
+.text-rpg-gold   { color: var(--rpg-gold); }
+.text-rpg-purple { color: var(--rpg-purple); }
+.text-rpg-green  { color: var(--rpg-green); }
+.text-rpg-red    { color: var(--rpg-red); }
+
+/* text opacity variants */
+.text-rpg-muted\/60 { color: color-mix(in srgb, var(--rpg-muted) 60%, transparent); }
+
+/* border */
+.border-rpg-border { border-color: var(--rpg-border); }
+.border-rpg-purple { border-color: var(--rpg-purple); }
+.border-rpg-green  { border-color: var(--rpg-green); }
+.border-rpg-muted  { border-color: var(--rpg-muted); }
+
+/* divide */
+.divide-rpg-border\/40 > * + * { border-color: color-mix(in srgb, var(--rpg-border) 40%, transparent); }
+
+/* hover variants */
+.hover\:bg-rpg-border:hover      { background-color: var(--rpg-border); }
+.hover\:bg-rpg-border\/50:hover  { background-color: color-mix(in srgb, var(--rpg-border) 50%, transparent); }
+.hover\:bg-rpg-border\/70:hover  { background-color: color-mix(in srgb, var(--rpg-border) 70%, transparent); }
+.hover\:text-rpg-text:hover      { color: var(--rpg-text); }
+.hover\:text-rpg-purple:hover    { color: var(--rpg-purple); }
+.hover\:text-rpg-red:hover       { color: var(--rpg-red); }
+.hover\:border-rpg-purple:hover  { border-color: var(--rpg-purple); }
+
+/* active variants */
+.active\:bg-rpg-border\/70:active { background-color: color-mix(in srgb, var(--rpg-border) 70%, transparent); }
+
+/* focus ring */
+.focus\:ring-rpg-purple:focus { --tw-ring-color: var(--rpg-purple); }
 
 /* ── 폼 요소 밝은 테마 ──────────────────────────── */
 input:not([type="color"]):not([type="range"]),
 select,
 textarea {
-  background-color: #ffffff;
-  color: #1a3a2a;
-  border-color: #a7f3d0;
+  background-color: var(--rpg-card);
+  color: var(--rpg-text);
+  border-color: var(--rpg-border);
 }
 input:not([type="color"])::placeholder,
 textarea::placeholder {
-  color: #4a7a5a;
+  color: var(--rpg-muted);
 }
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: none;
   opacity: 0.6;
 }
 option {
-  background-color: #ffffff;
-  color: #1a3a2a;
+  background-color: var(--rpg-card);
+  color: var(--rpg-text);
 }
 
 /* ── FullCalendar 밝은 테마 ─────────────────────── */
 .fc {
-  color: #1a3a2a;
+  color: var(--rpg-text);
 }
 .fc .fc-toolbar-title {
-  color: #1a3a2a;
+  color: var(--rpg-text);
   font-size: 1rem;
 }
 .fc .fc-button {
-  background-color: #ffffff !important;
-  border-color: #a7f3d0 !important;
-  color: #1a3a2a !important;
+  background-color: var(--rpg-card) !important;
+  border-color: var(--rpg-border) !important;
+  color: var(--rpg-text) !important;
 }
 .fc .fc-button:hover {
-  background-color: #f0faf5 !important;
+  background-color: var(--rpg-bg) !important;
 }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  background-color: #10b981 !important;
-  border-color: #10b981 !important;
+  background-color: var(--rpg-green) !important;
+  border-color: var(--rpg-green) !important;
   color: #ffffff !important;
 }
 .fc .fc-col-header-cell {
-  background-color: #f0faf5;
-  border-color: #a7f3d0 !important;
+  background-color: var(--rpg-bg);
+  border-color: var(--rpg-border) !important;
 }
 .fc .fc-col-header-cell-cushion {
-  color: #4a7a5a;
+  color: var(--rpg-muted);
   font-size: 0.75rem;
 }
 .fc .fc-daygrid-day {
-  background-color: #ffffff;
-  border-color: #a7f3d0 !important;
+  background-color: var(--rpg-card);
+  border-color: var(--rpg-border) !important;
 }
 .fc .fc-daygrid-day:hover {
-  background-color: #f0faf5;
+  background-color: var(--rpg-bg);
 }
 .fc .fc-daygrid-day-number {
-  color: #4a7a5a;
+  color: var(--rpg-muted);
 }
 .fc .fc-daygrid-day.fc-day-today {
   background-color: #dcfce7 !important;
 }
 .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-  color: #f0a500;
+  color: var(--rpg-gold);
   font-weight: bold;
 }
 .fc .fc-scrollgrid {
-  border-color: #a7f3d0 !important;
+  border-color: var(--rpg-border) !important;
 }
 .fc .fc-scrollgrid td,
 .fc .fc-scrollgrid th {
-  border-color: #a7f3d0 !important;
+  border-color: var(--rpg-border) !important;
 }
 .fc .fc-daygrid-more-link {
-  color: #4a7a5a;
+  color: var(--rpg-muted);
 }
 
 /* ── 애니메이션 ─────────────────────────────────── */
