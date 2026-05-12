@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { db } from '../db/db';
 import { useQuests } from '../hooks/useStudies';
 
-const COIN_BY_DIFF  = { easy: 2, normal: 5, hard: 10 };
-const DIFF_BORDER   = { easy: 'border-green-500', normal: 'border-blue-500', hard: 'border-red-500' };
+const COIN_BY_DIFF     = { easy: 2, normal: 5, hard: 10 };
+const DIFF_LEFT_COLOR  = { easy: '#22c55e', normal: '#3b82f6', hard: '#ef4444' };
 
 function todayStr() {
   const d = new Date();
@@ -139,7 +139,8 @@ export default function QuestPanel() {
             return (
               <div
                 key={quest.id}
-                className={`bg-rpg-card rounded-xl border-l-4 ${DIFF_BORDER[quest.difficulty]} border border-rpg-border shadow-lg px-3 py-2.5 flex items-center gap-2.5 transition-opacity ${done ? 'opacity-40' : ''}`}
+                className={`bg-rpg-card rounded-xl border-l-4 border border-rpg-border shadow-lg px-3 py-2.5 flex items-center gap-2.5 transition-opacity ${done ? 'opacity-40' : ''}`}
+                style={{ borderLeftColor: DIFF_LEFT_COLOR[quest.difficulty] }}
               >
                 <button
                   onClick={() => handleToggle(quest)}
