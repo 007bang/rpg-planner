@@ -107,14 +107,16 @@ export default function App() {
         <div id="section-quest" className="scroll-mt-16">
           <QuestPanel />
         </div>
-        <div id="section-shop" className="scroll-mt-16">
-          <ShopPanel />
-        </div>
         <div id="section-char-stat" className="scroll-mt-16">
           <CharacterStatPanel />
         </div>
         <div id="section-charts" className="scroll-mt-16">
           <StatsPanel />
+        </div>
+        <div id="section-shop" className="scroll-mt-16">
+          <ShopPanel />
+        </div>
+        <div>
           <InfoPanel />
         </div>
         <div id="section-settings" className="scroll-mt-16">

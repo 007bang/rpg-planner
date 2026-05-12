@@ -2,9 +2,9 @@ const NAV_ITEMS = [
   { label: '상태',   icon: '🏆', id: 'section-status'    },
   { label: '캘린더', icon: '📅', id: 'section-calendar'  },
   { label: '퀘스트', icon: '📜', id: 'section-quest'     },
-  { label: '상점',   icon: '🏪', id: 'section-shop'      },
   { label: '스탯',   icon: '💪', id: 'section-char-stat' },
   { label: '통계',   icon: '📊', id: 'section-charts'    },
+  { label: '상점',   icon: '🏪', id: 'section-shop'      },
   { label: '설정',   icon: '⚙️', id: 'section-settings'  },
 ];
 
