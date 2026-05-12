@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
-import { Bar, Line, Pie } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
   LineElement,
   PointElement,
   ArcElement,
@@ -17,7 +16,7 @@ import WeeklyReport from './WeeklyReport';
 
 ChartJS.register(
   CategoryScale, LinearScale,
-  BarElement, LineElement, PointElement,
+  LineElement, PointElement,
   ArcElement,
   Title, Tooltip, Legend,
 );
@@ -77,15 +76,6 @@ const LINE_OPTIONS = {
   scales: { y: SCALE_Y, x: SCALE_X },
 };
 
-const MONTHLY_OPTIONS = {
-  responsive: true,
-  plugins: {
-    legend: { display: false },
-    title: { display: true, text: '월별 공부시간 비교', ...CHART_TITLE_STYLE },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}시간` } },
-  },
-  scales: { y: SCALE_Y, x: SCALE_X },
-};
 
 export default function StatsPanel() {
   const allStudies = useStudies();
@@ -135,34 +125,6 @@ export default function StatsPanel() {
     };
   }, [studies]);
 
-  const monthlyData = useMemo(() => {
-    const currentMonth = monthStr();
-    const last6 = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date();
-      d.setDate(1);
-      d.setMonth(d.getMonth() - (5 - i));
-      return monthStr(d);
-    });
-    const minutesByMonth = {};
-    for (const s of studies) {
-      const m = s.date.slice(0, 7);
-      minutesByMonth[m] = (minutesByMonth[m] ?? 0) + s.minutes;
-    }
-    return {
-      labels: last6.map(m => {
-        const [y, mo] = m.split('-');
-        return `${y.slice(2)}년 ${parseInt(mo)}월`;
-      }),
-      datasets: [{
-        data: last6.map(m => toHours(minutesByMonth[m] ?? 0)),
-        backgroundColor: last6.map(m =>
-          m === currentMonth ? '#7c3aed' : 'rgba(124,58,237,0.35)'
-        ),
-        borderRadius: 6,
-        borderSkipped: false,
-      }],
-    };
-  }, [studies]);
 
   if (allStudies === undefined) return null;
 
@@ -178,9 +140,6 @@ export default function StatsPanel() {
         </div>
       ) : (
         <>
-          <div className="bg-rpg-card rounded-2xl p-5 shadow-lg border border-rpg-border">
-            <Bar data={monthlyData} options={MONTHLY_OPTIONS} />
-          </div>
           <div className="bg-rpg-card rounded-2xl p-5 shadow-lg border border-rpg-border">
             <Line data={lineData} options={LINE_OPTIONS} />
           </div>

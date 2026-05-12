@@ -84,7 +84,7 @@ export default function SettingsPanel() {
   const [editBoard, setEditBoard]         = useState(false);
   const [boardInput, setBoardInput]       = useState('');
 
-  const BOARD_PRICE = 30;
+  const BOARD_PRICE = 10;
   const currentBoard = character?.boardMessage ?? '📚 열공 중!';
 
   function startEditBoard() {
