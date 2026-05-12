@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 const NAV_ITEMS = [
   { label: '상태',   icon: '🏆', id: 'section-status'    },
   { label: '캘린더', icon: '📅', id: 'section-calendar'  },
@@ -18,12 +20,18 @@ function formatNavTime(s) {
 }
 
 export default function NavBar({ timerElapsed = 0, timerRunning = false }) {
+  const navRef = useRef(null);
+
   function scrollTo(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById(id);
+    if (!el) return;
+    const navHeight = navRef.current?.offsetHeight ?? 52;
+    const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+    window.scrollTo({ top, behavior: 'smooth' });
   }
 
   return (
-    <div className="sticky top-0 z-40 bg-rpg-card border-b border-rpg-border shadow-lg">
+    <div ref={navRef} className="sticky top-0 z-40 bg-rpg-card border-b border-rpg-border shadow-lg">
       {timerRunning && (
         <div className="bg-rpg-purple text-white text-xs font-bold font-mono text-center py-1 tracking-wide">
           ⏱ {formatNavTime(timerElapsed)} 학습 중

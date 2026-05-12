@@ -104,26 +104,26 @@ export default function App() {
           onPause={pause}
           onReset={handleTimerReset}
         />
-        <div id="section-status" className="scroll-mt-16">
+        <div id="section-status">
           <StatusPanel onOpenInfo={handleOpenInfo} />
           <DdayBanner />
         </div>
-        <div id="section-calendar" className="scroll-mt-16">
+        <div id="section-calendar">
           <StudyCalendar onStudyComplete={handleStudyComplete} />
         </div>
-        <div id="section-quest" className="scroll-mt-16">
+        <div id="section-quest">
           <QuestPanel />
         </div>
-        <div id="section-char-stat" className="scroll-mt-16">
+        <div id="section-char-stat">
           <CharacterStatPanel />
         </div>
-        <div id="section-charts" className="scroll-mt-16">
+        <div id="section-charts">
           <StatsPanel />
         </div>
-        <div id="section-shop" className="scroll-mt-16">
+        <div id="section-shop">
           <ShopPanel />
         </div>
-        <div id="section-settings" className="scroll-mt-16">
+        <div id="section-settings">
           <SettingsPanel />
         </div>
       </div>
