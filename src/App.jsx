@@ -15,6 +15,7 @@ import StudyCalendar from './components/StudyCalendar';
 import StatsPanel from './components/StatsPanel';
 import QuestPanel from './components/QuestPanel';
 import CharacterStatPanel from './components/CharacterStatPanel';
+import ShopPanel from './components/ShopPanel';
 import SettingsPanel from './components/SettingsPanel';
 import InfoPanel from './components/InfoPanel';
 import CharacterSetup from './components/CharacterSetup';
@@ -107,6 +108,9 @@ export default function App() {
         </div>
         <div id="section-quest" className="scroll-mt-16">
           <QuestPanel />
+        </div>
+        <div id="section-shop" className="scroll-mt-16">
+          <ShopPanel />
         </div>
         <div id="section-char-stat" className="scroll-mt-16">
           <CharacterStatPanel />
