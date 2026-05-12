@@ -31,4 +31,4 @@ export const SHOP_CATEGORIES = [
   },
 ];
 
-export const AVATAR_PRICE = 10;
+export const AVATAR_PRICE = 50;
