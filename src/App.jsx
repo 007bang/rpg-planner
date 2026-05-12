@@ -6,7 +6,6 @@ import { useTimer } from './hooks/useTimer';
 import { JOB_MULT, DEFAULT_MULT } from './utils/xp';
 import { applyTheme } from './constants/themes';
 import NavBar from './components/NavBar';
-import StudyTimer from './components/StudyTimer';
 import ClassroomCanvas from './components/ClassroomCanvas';
 import AddStudyModal from './components/AddStudyModal';
 import StatusPanel from './components/StatusPanel';
@@ -95,14 +94,13 @@ export default function App() {
           <StatusPanel />
           <DdayBanner />
         </div>
-        <StudyTimer
+        <ClassroomCanvas
           elapsed={elapsed}
           isRunning={isRunning}
           onStart={start}
           onPause={pause}
           onReset={handleTimerReset}
         />
-        <ClassroomCanvas />
         <div id="section-calendar" className="scroll-mt-16">
           <StudyCalendar onStudyComplete={handleStudyComplete} />
         </div>

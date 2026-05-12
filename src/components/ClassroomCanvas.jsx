@@ -13,7 +13,19 @@ const WIN_Y = 16, WIN_W = 85, WIN_H = 88
 const L_WIN_X = 14
 const R_WIN_X = CW - 99
 
-/* ── 책상 레이아웃 (드래그 히트 검사에도 사용) ──────── */
+/* ── 칠판 치수 (모듈 레벨 — 클릭 감지에도 사용) ──── */
+const BB_X = Math.round(CW * 0.265)    // 159
+const BB_W = Math.round(CW * 0.47)     // 282
+const BB_Y = 12
+const BB_H = Math.round(WALL_H * 0.60) // 94
+
+/* ── 전자시계 영역 ─────────────────────────────── */
+const CLOCK_W = 150
+const CLOCK_H = 28
+const CLOCK_X = BB_X + Math.round((BB_W - CLOCK_W) / 2)
+const CLOCK_Y = BB_Y + 10
+
+/* ── 책상 레이아웃 ──────────────────────────────── */
 const D_W = 58, D_H = 22
 const MARGIN_X = 80
 const C_SPACE = (CW - MARGIN_X * 2) / 3
@@ -22,7 +34,7 @@ const FLOOR_AVAIL = CH - WALL_H - 8
 const R_SPACE = FLOOR_AVAIL / 3
 const ROW_YS = [0, 1, 2].map(r => Math.round(WALL_H + R_SPACE * r + 18))
 
-/* ── 창문 하나 그리기 ──────────────────────────────── */
+/* ── 창문 그리기 ──────────────────────────────── */
 function drawWindow(ctx, wx) {
   ctx.save()
   ctx.beginPath()
@@ -67,7 +79,7 @@ function drawWindow(ctx, wx) {
   ctx.stroke()
 }
 
-/* ── 책상 하나 그리기 ────────────────────────────── */
+/* ── 책상 그리기 ──────────────────────────────── */
 function drawDesk(ctx, dx, dy, dw, dh) {
   ctx.fillStyle = 'rgba(0,0,0,0.07)'
   ctx.fillRect(dx + 4, dy + dh + 6, dw, 3)
@@ -90,8 +102,15 @@ function drawDesk(ctx, dx, dy, dw, dh) {
   })
 }
 
-/* ── 전체 씬 그리기 ──────────────────────────────── */
-function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, hoverDesk = null, boardMessage = '📚 열공 중!') {
+function formatElapsed(s) {
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  return [h, m, sec].map(v => String(v).padStart(2, '0')).join(':')
+}
+
+/* ── 전체 씬 그리기 ──────────────────────────── */
+function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, hoverDesk = null, boardMessage = '📚 열공 중!', elapsed = 0, isRunning = false) {
   ctx.clearRect(0, 0, CW, CH)
 
   /* 벽 */
@@ -120,11 +139,6 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
   drawWindow(ctx, R_WIN_X)
 
   /* 칠판 */
-  const BB_X = Math.round(CW * 0.265)
-  const BB_W = Math.round(CW * 0.47)
-  const BB_Y = 12
-  const BB_H = Math.round(WALL_H * 0.60)
-
   ctx.fillStyle = 'rgba(0,0,0,0.10)'
   ctx.fillRect(BB_X + 4, BB_Y + 4, BB_W, BB_H)
   ctx.fillStyle = '#2D6B25'
@@ -145,11 +159,27 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
   ctx.fillStyle = '#E8E0D0'
   ctx.fillRect(BB_X + 10, BB_Y + BB_H + 1, 20, 3)
 
+  /* 전자시계 */
+  ctx.fillStyle = '#081408'
+  ctx.fillRect(CLOCK_X, CLOCK_Y, CLOCK_W, CLOCK_H)
+
+  ctx.strokeStyle = isRunning ? '#22c55e' : '#374151'
+  ctx.lineWidth = 1.5
+  ctx.strokeRect(CLOCK_X, CLOCK_Y, CLOCK_W, CLOCK_H)
+
+  ctx.font = 'bold 16px monospace'
+  ctx.fillStyle = isRunning ? '#4ade80' : '#6b7280'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(formatElapsed(elapsed), CLOCK_X + CLOCK_W / 2, CLOCK_Y + CLOCK_H / 2)
+
+  /* 칠판 문구 (시계 아래) */
+  const msgY = Math.round((CLOCK_Y + CLOCK_H + BB_Y + BB_H) / 2)
   ctx.font = 'bold 15px sans-serif'
   ctx.fillStyle = 'rgba(255,255,255,0.60)'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(boardMessage, BB_X + BB_W / 2, BB_Y + BB_H * 0.50)
+  ctx.fillText(boardMessage, BB_X + BB_W / 2, msgY)
 
   /* 책상 3×3 */
   const jobEmoji    = JOB_EMOJI[job] ?? '📚'
@@ -160,7 +190,6 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
       const dx = COL_XS[c]
       const dy = ROW_YS[r]
 
-      /* 드롭 대상 하이라이트 */
       if (hoverDesk?.r === r && hoverDesk?.c === c) {
         ctx.fillStyle = 'rgba(99,102,241,0.18)'
         ctx.fillRect(dx - 4, dy - 32, D_W + 8, D_H + 36)
@@ -168,7 +197,6 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
 
       drawDesk(ctx, dx, dy, D_W, D_H)
 
-      /* 아바타 — 드래그 중이 아닐 때만 책상 위에 */
       if (r === deskRow && c === deskCol && !dragPos) {
         const cx = dx + D_W / 2
         ctx.textAlign = 'center'
@@ -181,7 +209,6 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
     }
   }
 
-  /* 드래그 중 커서 위치에 아바타 */
   if (dragPos) {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'bottom'
@@ -192,10 +219,11 @@ function drawScene(ctx, job, avatar, deskRow = 1, deskCol = 1, dragPos = null, h
   }
 }
 
-/* ── 컴포넌트 ─────────────────────────────────────── */
-export default function ClassroomCanvas() {
+/* ── 컴포넌트 ─────────────────────────────────── */
+export default function ClassroomCanvas({ elapsed = 0, isRunning = false, onStart, onPause, onReset }) {
   const canvasRef  = useRef(null)
   const dragRef    = useRef({ active: false, x: 0, y: 0, hoverDesk: null })
+  const clockClick = useRef({ lastTime: 0, timer: null })
   const characters = useCharacter()
   const character  = characters?.[0] ?? null
   const job          = character?.job          ?? null
@@ -207,8 +235,8 @@ export default function ClassroomCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    drawScene(canvas.getContext('2d'), job, avatar, deskRow, deskCol, null, null, boardMessage)
-  }, [job, avatar, deskRow, deskCol, boardMessage])
+    drawScene(canvas.getContext('2d'), job, avatar, deskRow, deskCol, null, null, boardMessage, elapsed, isRunning)
+  }, [job, avatar, deskRow, deskCol, boardMessage, elapsed, isRunning])
 
   /* 마우스/터치 → 캔버스 좌표 변환 */
   function toCanvas(e) {
@@ -220,7 +248,7 @@ export default function ClassroomCanvas() {
     }
   }
 
-  /* 캔버스 좌표 → 해당 책상 {r, c} or null */
+  /* 캔버스 좌표 → 책상 {r, c} or null */
   function getDeskAt(x, y) {
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
@@ -233,9 +261,36 @@ export default function ClassroomCanvas() {
     return null
   }
 
+  function isInClock(x, y) {
+    return x >= CLOCK_X && x <= CLOCK_X + CLOCK_W && y >= CLOCK_Y && y <= CLOCK_Y + CLOCK_H
+  }
+
   function handlePointerDown(e) {
     const { x, y } = toCanvas(e)
-    /* 아바타 중심에서 22px 이내만 드래그 시작 */
+
+    /* 시계 클릭 — 더블클릭 감지 후 단일/더블 처리 */
+    if (isInClock(x, y)) {
+      const now = Date.now()
+      const gap = now - clockClick.current.lastTime
+      clockClick.current.lastTime = now
+
+      if (gap < 300) {
+        /* 더블클릭 → 초기화 */
+        clearTimeout(clockClick.current.timer)
+        if (elapsed > 0) onReset?.()
+      } else {
+        /* 단일클릭 — 250ms 후 토글 (더블클릭이면 취소됨) */
+        clearTimeout(clockClick.current.timer)
+        const capturedRunning = isRunning
+        clockClick.current.timer = setTimeout(() => {
+          if (capturedRunning) onPause?.()
+          else onStart?.()
+        }, 250)
+      }
+      return
+    }
+
+    /* 아바타 드래그 시작 */
     const cx = COL_XS[deskCol] + D_W / 2
     const cy = ROW_YS[deskRow] - 13
     if (Math.hypot(x - cx, y - cy) > 22) return
@@ -245,13 +300,19 @@ export default function ClassroomCanvas() {
   }
 
   function handlePointerMove(e) {
-    if (!dragRef.current.active) return
     const { x, y } = toCanvas(e)
+
+    if (!dragRef.current.active) {
+      /* 시계 위 커서 변경 */
+      canvasRef.current.style.cursor = isInClock(x, y) ? 'pointer' : 'default'
+      return
+    }
+
     const hoverDesk = getDeskAt(x, y)
     dragRef.current.x = x
     dragRef.current.y = y
     dragRef.current.hoverDesk = hoverDesk
-    drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, { x, y }, hoverDesk, boardMessage)
+    drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, { x, y }, hoverDesk, boardMessage, elapsed, isRunning)
     e.preventDefault()
   }
 
@@ -263,9 +324,8 @@ export default function ClassroomCanvas() {
 
     if (target && character && (target.r !== deskRow || target.c !== deskCol)) {
       await db.characters.update(character.id, { deskRow: target.r, deskCol: target.c })
-      /* useLiveQuery가 재렌더링 → useEffect가 다시 drawScene 호출 */
     } else {
-      drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, null, null, boardMessage)
+      drawScene(canvasRef.current.getContext('2d'), job, avatar, deskRow, deskCol, null, null, boardMessage, elapsed, isRunning)
     }
   }
 
