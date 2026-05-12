@@ -1,13 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { useStudies, useCharacter, useCoin } from '../hooks/useStudies';
-import { computeStats, JOB_MULT } from '../utils/xp';
-
-const BADGE_LIST = [
-  { key: 'firstRecord',   icon: '🎯', label: '첫 기록'     },
-  { key: 'streak3',       icon: '🔥', label: '3일 연속'    },
-  { key: 'hardChallenge', icon: '⚡', label: '어려움 도전' },
-  { key: 'levelMaster',   icon: '👑', label: '레벨 마스터' },
-];
+import { useStudies, useQuests, useCharacter, useCoin } from '../hooks/useStudies';
+import { computeStats, JOB_MULT, ACHIEVEMENTS } from '../utils/xp';
+import { db } from '../db/db';
 
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
@@ -54,38 +48,93 @@ function scrollToInfo() {
 
 export default function StatusPanel() {
   const studies    = useStudies();
+  const quests     = useQuests();
   const characters = useCharacter();
   const coin       = useCoin();
 
+  // Level-up modal
   const [levelUpModal, setLevelUpModal] = useState(false);
-  const prevLevelRef = useRef(null);
-  const timerRef     = useRef(null);
+  const prevLevelRef  = useRef(null);
+  const levelTimerRef = useRef(null);
+
+  // Achievement popup
+  const [achieveQueue, setAchieveQueue] = useState([]);
+  const [achievePopup, setAchievePopup] = useState(null);
+  const achieveTimerRef = useRef(null);
 
   const character = (characters ?? [])[0] ?? null;
-  const { totalXP, todayXP, streak, level, levelName, progress, remaining, badges } =
-    computeStats(studies ?? [], character?.job ?? null);
+  const { totalXP, todayXP, streak, level, levelName, progress, remaining, achievements } =
+    computeStats(studies ?? [], quests ?? [], character?.job ?? null);
 
+  // Level-up detection
   useEffect(() => {
     if (studies === undefined) return;
     if (prevLevelRef.current !== null && level > prevLevelRef.current) {
       setLevelUpModal(true);
-      clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setLevelUpModal(false), 3000);
+      clearTimeout(levelTimerRef.current);
+      levelTimerRef.current = setTimeout(() => setLevelUpModal(false), 3000);
     }
     prevLevelRef.current = level;
-    return () => clearTimeout(timerRef.current);
+    return () => clearTimeout(levelTimerRef.current);
   }, [level, studies]);
 
-  function closeModal() {
-    clearTimeout(timerRef.current);
+  // Achievement detection
+  const dataReady = studies !== undefined && quests !== undefined && characters !== undefined;
+  const achieveKey = dataReady
+    ? ACHIEVEMENTS.map(a => achievements[a.id] ? '1' : '0').join('')
+    : '';
+
+  useEffect(() => {
+    if (!achieveKey || !character) return;
+
+    // First run: unlockedAchievements doesn't exist yet — save silently, no popup
+    if (character.unlockedAchievements === undefined) {
+      const currentIds = ACHIEVEMENTS.filter(a => achievements[a.id]).map(a => a.id);
+      db.characters.update(character.id, { unlockedAchievements: JSON.stringify(currentIds) });
+      return;
+    }
+
+    const savedIds = new Set(JSON.parse(character.unlockedAchievements));
+    const newOnes  = ACHIEVEMENTS.filter(a => achievements[a.id] && !savedIds.has(a.id));
+    if (newOnes.length === 0) return;
+
+    const allIds = [...savedIds, ...newOnes.map(a => a.id)];
+    db.characters.update(character.id, { unlockedAchievements: JSON.stringify(allIds) });
+    setAchieveQueue(prev => [...prev, ...newOnes]);
+  }, [achieveKey]); // eslint-disable-line
+
+  // Achievement dequeue
+  useEffect(() => {
+    if (achievePopup !== null || achieveQueue.length === 0) return;
+    const [next, ...rest] = achieveQueue;
+    setAchievePopup(next);
+    setAchieveQueue(rest);
+    clearTimeout(achieveTimerRef.current);
+    achieveTimerRef.current = setTimeout(() => setAchievePopup(null), 3000);
+  }, [achievePopup, achieveQueue]);
+
+  useEffect(() => () => {
+    clearTimeout(levelTimerRef.current);
+    clearTimeout(achieveTimerRef.current);
+  }, []);
+
+  function closeLevelModal() {
+    clearTimeout(levelTimerRef.current);
     setLevelUpModal(false);
   }
 
-  if (studies === undefined || characters === undefined || coin === undefined) return null;
+  function closeAchievePopup() {
+    clearTimeout(achieveTimerRef.current);
+    setAchievePopup(null);
+  }
+
+  if (studies === undefined || quests === undefined || characters === undefined || coin === undefined) return null;
+
+  const achievedCount = ACHIEVEMENTS.filter(a => achievements[a.id]).length;
 
   return (
     <>
-    {/* 레벨업 축하 모달 */}
+    {/* 레벨업 모달 */}
     {levelUpModal && (
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
         <div
@@ -136,7 +185,6 @@ export default function StatusPanel() {
             </div>
           )}
 
-          {/* 3초 카운트다운 바 */}
           <div className="h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
             <div
               className="h-full bg-white/50 rounded-full"
@@ -145,7 +193,40 @@ export default function StatusPanel() {
           </div>
 
           <button
-            onClick={closeModal}
+            onClick={closeLevelModal}
+            className="w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 font-medium transition-colors text-sm"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* 업적 달성 팝업 */}
+    {achievePopup && (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div
+          className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl text-center"
+          style={{ animation: 'levelup-popup 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both' }}
+        >
+          <div className="text-5xl mb-2">{achievePopup.icon}</div>
+          <p className="text-sm font-medium text-yellow-100 mb-1">업적 달성!</p>
+          <h2 className="text-xl font-bold mb-1">{achievePopup.name}</h2>
+          <p className="text-sm text-yellow-200 mb-4">{achievePopup.desc}</p>
+          <div className="bg-white/20 rounded-xl px-4 py-2 mb-4">
+            <p className="text-lg font-bold text-yellow-200">+{achievePopup.xp} XP</p>
+          </div>
+          {achieveQueue.length > 0 && (
+            <p className="text-xs text-yellow-200 mb-3">+{achieveQueue.length}개 추가 업적 대기 중</p>
+          )}
+          <div className="h-1 bg-white/20 rounded-full mb-4 overflow-hidden">
+            <div
+              className="h-full bg-white/50 rounded-full"
+              style={{ animation: 'countdown 3s linear forwards' }}
+            />
+          </div>
+          <button
+            onClick={closeAchievePopup}
             className="w-full py-2.5 rounded-xl bg-white/20 hover:bg-white/30 font-medium transition-colors text-sm"
           >
             확인
@@ -174,7 +255,7 @@ export default function StatusPanel() {
           <h2
             className="text-xl font-bold leading-tight cursor-pointer hover:text-indigo-200 transition-colors"
             onClick={scrollToInfo}
-            title="레벨 · 뱃지 정보 보기"
+            title="레벨 · 업적 정보 보기"
           >
             {levelName} ›
           </h2>
@@ -233,21 +314,30 @@ export default function StatusPanel() {
         </div>
       </div>
 
-      {/* 뱃지 아이콘 요약 */}
+      {/* 업적 요약 */}
       <div
-        className="flex justify-around border-t border-white/10 pt-4 cursor-pointer hover:opacity-80 transition-opacity"
+        className="border-t border-white/10 pt-4 cursor-pointer hover:opacity-80 transition-opacity"
         onClick={scrollToInfo}
-        title="뱃지 획득 조건 보기"
+        title="업적 목록 보기"
       >
-        {BADGE_LIST.map(badge => (
-          <div
-            key={badge.key}
-            className={`flex flex-col items-center gap-1 transition-opacity duration-300${badges[badge.key] ? '' : ' opacity-25'}`}
-          >
-            <span className="text-2xl">{badge.icon}</span>
-            <span className="text-xs text-indigo-300 text-center leading-tight">{badge.label}</span>
-          </div>
-        ))}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-indigo-300 tracking-wider uppercase">업적</span>
+          <span className="text-sm font-bold text-white">
+            {achievedCount}
+            <span className="text-indigo-300 font-normal text-xs"> / {ACHIEVEMENTS.length}</span>
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {ACHIEVEMENTS.map(a => (
+            <span
+              key={a.id}
+              className={`text-lg transition-opacity${achievements[a.id] ? '' : ' opacity-20'}`}
+              title={a.name}
+            >
+              {a.icon}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
     </>

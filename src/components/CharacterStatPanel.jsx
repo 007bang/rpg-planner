@@ -44,7 +44,7 @@ export default function CharacterStatPanel() {
   const safeStudies = studies  ?? [];
   const safeQuests  = quests   ?? [];
 
-  const { totalXP, streak } = computeStats(safeStudies, character?.job ?? null);
+  const { totalXP, streak } = computeStats(safeStudies, safeQuests, character?.job ?? null);
 
   const completed = safeStudies.filter(s => s.status === 'completed');
   const minutesByDate = {};
