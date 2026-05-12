@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
-/* ── RPG 민트 테마 CSS 변수 ─────────────────────── */
+/* ── 기본 테마 CSS 변수 ─────────────────────────── */
 :root {
-  --rpg-bg:     #f0faf5;
+  --rpg-bg:     #f8f9fa;
   --rpg-card:   #ffffff;
-  --rpg-border: #a7f3d0;
-  --rpg-text:   #1a3a2a;
-  --rpg-muted:  #4a7a5a;
+  --rpg-border: #e9ecef;
+  --rpg-text:   #212529;
+  --rpg-muted:  #6c757d;
   --rpg-gold:   #f0a500;
-  --rpg-purple: #7c3aed;
+  --rpg-purple: #6366f1;
   --rpg-green:  #10b981;
   --rpg-red:    #ef4444;
 
@@ -137,7 +137,7 @@ option {
   color: var(--rpg-muted);
 }
 .fc .fc-daygrid-day.fc-day-today {
-  background-color: #dcfce7 !important;
+  background-color: #e0e7ff !important;
 }
 .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
   color: var(--rpg-gold);
