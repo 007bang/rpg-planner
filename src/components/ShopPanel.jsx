@@ -11,7 +11,7 @@ const TABS = [
   { id: 'board',  label: '칠판'   },
 ];
 
-const BOARD_PRICE = 10;
+const BOARD_PRICE = 25;
 
 export default function ShopPanel() {
   const characters = useCharacter();
