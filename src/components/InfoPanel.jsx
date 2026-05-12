@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useStudies, useQuests, useCharacter } from '../hooks/useStudies';
 import { computeStats, ACHIEVEMENTS } from '../utils/xp';
 
@@ -14,93 +15,130 @@ const LEVEL_INFO = [
   { level: 10, name: '시험의 전설',   range: '12,000 XP 이상'    },
 ];
 
-export default function InfoPanel() {
+const TABS = [
+  { id: 'level',   label: '레벨 칭호' },
+  { id: 'achieve', label: '업적'      },
+];
+
+export default function InfoPanel({ open, onClose, defaultTab = 'level' }) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const studies    = useStudies();
   const quests     = useQuests();
   const characters = useCharacter();
 
-  if (studies === undefined || quests === undefined || characters === undefined) return null;
+  useEffect(() => {
+    if (open) setActiveTab(defaultTab);
+  }, [open, defaultTab]);
 
-  const character         = characters[0] ?? null;
+  const character         = (characters ?? [])[0] ?? null;
   const savedAchievements = JSON.parse(character?.unlockedAchievements ?? '[]');
-  const { level, achievements } = computeStats(studies, quests, character?.job ?? null, savedAchievements);
-
-  const categories = [...new Set(ACHIEVEMENTS.map(a => a.category))];
+  const { level, achievements } = computeStats(studies ?? [], quests ?? [], character?.job ?? null, savedAchievements);
+  const categories    = [...new Set(ACHIEVEMENTS.map(a => a.category))];
+  const achievedCount = ACHIEVEMENTS.filter(a => achievements[a.id]).length;
 
   return (
-    <div id="info-section" className="mx-4 mb-4 space-y-3">
-      {/* 레벨 칭호 */}
-      <div className="bg-rpg-card rounded-2xl shadow-lg border border-rpg-border overflow-hidden">
-        <div className="px-5 py-3 border-b border-rpg-border">
-          <h3 className="text-sm font-bold text-rpg-text">레벨 칭호</h3>
+    <div
+      className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50${open ? '' : ' hidden'}`}
+      onClick={onClose}
+    >
+      <div
+        className="bg-rpg-card rounded-2xl shadow-2xl w-full max-w-sm mx-4 flex flex-col max-h-[85vh]"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 헤더 */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-rpg-border flex-shrink-0">
+          <h2 className="text-base font-bold text-rpg-text">레벨 & 업적</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-rpg-muted hover:text-rpg-text hover:bg-rpg-border transition-colors text-lg leading-none"
+          >
+            ✕
+          </button>
         </div>
-        <div className="divide-y divide-rpg-border/40">
-          {LEVEL_INFO.map(info => {
-            const isCurrent = level === info.level;
-            return (
-              <div
-                key={info.level}
-                className={`flex items-center gap-4 px-5 py-3.5 transition-colors${isCurrent ? ' bg-rpg-green/10' : ' opacity-35'}`}
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0${isCurrent ? ' bg-rpg-purple text-white' : ' bg-rpg-border text-rpg-muted'}`}>
-                  {info.level}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold${isCurrent ? ' text-rpg-text' : ' text-rpg-muted'}`}>
-                    {info.name}
-                  </p>
-                  <p className={`text-xs mt-0.5${isCurrent ? ' text-rpg-muted' : ' text-rpg-muted/60'}`}>
-                    {info.range}
-                  </p>
-                </div>
-                {isCurrent && (
-                  <span className="text-xs font-medium text-rpg-purple bg-rpg-purple/20 px-2 py-0.5 rounded-full flex-shrink-0">
-                    현재
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* 업적 */}
-      <div className="bg-rpg-card rounded-2xl shadow-lg border border-rpg-border overflow-hidden">
-        <div className="px-5 py-3 border-b border-rpg-border flex items-center justify-between">
-          <h3 className="text-sm font-bold text-rpg-text">업적</h3>
-          <span className="text-xs text-rpg-muted">
-            {ACHIEVEMENTS.filter(a => achievements[a.id]).length} / {ACHIEVEMENTS.length} 달성
-          </span>
+        {/* 탭 */}
+        <div className="flex px-4 pt-3 gap-1 flex-shrink-0">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-rpg-purple text-white'
+                  : 'text-rpg-muted hover:text-rpg-text'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        {categories.map(cat => (
-          <div key={cat}>
-            <div className="px-5 py-2 bg-rpg-border/30">
-              <p className="text-xs font-semibold text-rpg-muted">{cat}</p>
+
+        {/* 콘텐츠 */}
+        <div className="overflow-y-auto flex-1 p-4 space-y-2">
+          {activeTab === 'level' && (
+            <div className="rounded-xl border border-rpg-border overflow-hidden">
+              <div className="divide-y divide-rpg-border/40">
+                {LEVEL_INFO.map(info => {
+                  const isCurrent = level === info.level;
+                  return (
+                    <div
+                      key={info.level}
+                      className={`flex items-center gap-3 px-4 py-3${isCurrent ? ' bg-rpg-green/10' : ' opacity-35'}`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0${isCurrent ? ' bg-rpg-purple text-white' : ' bg-rpg-border text-rpg-muted'}`}>
+                        {info.level}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-semibold${isCurrent ? ' text-rpg-text' : ' text-rpg-muted'}`}>{info.name}</p>
+                        <p className={`text-xs mt-0.5${isCurrent ? ' text-rpg-muted' : ' text-rpg-muted/60'}`}>{info.range}</p>
+                      </div>
+                      {isCurrent && (
+                        <span className="text-xs font-medium text-rpg-purple bg-rpg-purple/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                          현재
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <div className="divide-y divide-rpg-border/40">
-              {ACHIEVEMENTS.filter(a => a.category === cat).map(ach => (
-                <div
-                  key={ach.id}
-                  className={`flex items-center gap-3 px-5 py-3.5 transition-opacity duration-300${achievements[ach.id] ? '' : ' opacity-30'}`}
-                >
-                  <span className="text-xl flex-shrink-0">{ach.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-rpg-text">{ach.name}</p>
-                    <p className="text-xs text-rpg-muted mt-0.5">{ach.desc}</p>
+          )}
+
+          {activeTab === 'achieve' && (
+            <>
+              <p className="text-xs text-rpg-muted text-right">{achievedCount} / {ACHIEVEMENTS.length} 달성</p>
+              {categories.map(cat => (
+                <div key={cat} className="rounded-xl border border-rpg-border overflow-hidden">
+                  <div className="px-4 py-2 bg-rpg-border/30">
+                    <p className="text-xs font-semibold text-rpg-muted">{cat}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                    <span className="text-xs font-bold text-rpg-gold">+{ach.xp} XP</span>
-                    {achievements[ach.id] && (
-                      <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-                        달성
-                      </span>
-                    )}
+                  <div className="divide-y divide-rpg-border/40">
+                    {ACHIEVEMENTS.filter(a => a.category === cat).map(ach => (
+                      <div
+                        key={ach.id}
+                        className={`flex items-center gap-3 px-4 py-3${achievements[ach.id] ? '' : ' opacity-30'}`}
+                      >
+                        <span className="text-xl flex-shrink-0">{ach.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-rpg-text">{ach.name}</p>
+                          <p className="text-xs text-rpg-muted mt-0.5">{ach.desc}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="text-xs font-bold text-rpg-gold">+{ach.xp} XP</span>
+                          {achievements[ach.id] && (
+                            <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                              달성
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
