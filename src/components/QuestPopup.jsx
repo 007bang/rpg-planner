@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react'
 
 const DIFFICULTY_LABEL = { easy: '쉬움', normal: '보통', hard: '어려움' }
 const DIFFICULTY_CLS   = {
-  easy:   'text-green-400 bg-green-900/30 border-green-700',
-  normal: 'text-blue-400  bg-blue-900/30  border-blue-700',
-  hard:   'text-red-400   bg-red-900/30   border-red-700',
+  easy:   'text-green-700 bg-green-50 border-green-200',
+  normal: 'text-blue-700  bg-blue-50  border-blue-200',
+  hard:   'text-red-700   bg-red-50   border-red-200',
 }
 
 export default function QuestPopup({ extendedProps, position, onClose }) {
@@ -42,7 +42,7 @@ export default function QuestPopup({ extendedProps, position, onClose }) {
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${DIFFICULTY_CLS[difficulty] ?? 'text-rpg-muted bg-rpg-border/40 border-rpg-border'}`}>
           {DIFFICULTY_LABEL[difficulty] ?? difficulty}
         </span>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${done ? 'text-rpg-green bg-green-900/30 border-green-700' : 'text-rpg-muted bg-rpg-border/40 border-rpg-border'}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${done ? 'text-green-700 bg-green-50 border-green-200' : 'text-rpg-muted bg-rpg-border/40 border-rpg-border'}`}>
           {done ? '✓ 완료' : '미완료'}
         </span>
       </div>

@@ -179,7 +179,7 @@ export default function QuestPanel() {
       {/* 소요 시간 입력 모달 */}
       {durationModal.open && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
           onClick={() => setDurationModal(DURATION_CLOSED)}
         >
           <div
@@ -253,7 +253,7 @@ export default function QuestPanel() {
       {/* 추가/수정 모달 */}
       {modal.open && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
           onClick={() => setModal(MODAL_CLOSED)}
         >
           <div

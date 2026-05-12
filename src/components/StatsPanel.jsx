@@ -22,9 +22,9 @@ ChartJS.register(
   Title, Tooltip, Legend,
 );
 
-/* 차트 전역 다크 테마 */
-ChartJS.defaults.color = '#8892b0';
-ChartJS.defaults.borderColor = 'rgba(15,52,96,0.6)';
+/* 차트 전역 밝은 테마 */
+ChartJS.defaults.color = '#4a7a5a';
+ChartJS.defaults.borderColor = 'rgba(167,243,208,0.6)';
 
 const toHours = (minutes) => Math.round(minutes / 6) / 10;
 
@@ -41,14 +41,14 @@ function monthStr(date = new Date()) {
   return `${y}-${m}`;
 }
 
-const CHART_TITLE_STYLE = { color: '#e0e0e0', font: { size: 14, weight: 'bold' } };
-const LEGEND_STYLE = { position: 'bottom', labels: { padding: 16, font: { size: 12 }, color: '#8892b0' } };
+const CHART_TITLE_STYLE = { color: '#1a3a2a', font: { size: 14, weight: 'bold' } };
+const LEGEND_STYLE = { position: 'bottom', labels: { padding: 16, font: { size: 12 }, color: '#4a7a5a' } };
 const SCALE_Y = {
   beginAtZero: true,
-  ticks: { callback: v => `${v}시간`, color: '#8892b0' },
-  grid: { color: 'rgba(15,52,96,0.6)' },
+  ticks: { callback: v => `${v}시간`, color: '#4a7a5a' },
+  grid: { color: 'rgba(167,243,208,0.5)' },
 };
-const SCALE_X = { grid: { display: false }, ticks: { color: '#8892b0' } };
+const SCALE_X = { grid: { display: false }, ticks: { color: '#4a7a5a' } };
 
 const PIE_OPTIONS = {
   responsive: true,
@@ -104,7 +104,7 @@ export default function StatsPanel() {
         data: active.map(s => minutesBySubject[s.name]),
         backgroundColor: active.map(s => s.color),
         borderWidth: 2,
-        borderColor: '#16213e',
+        borderColor: '#ffffff',
       }],
     };
   }, [studies, subjects]);
@@ -126,7 +126,7 @@ export default function StatsPanel() {
         borderColor: '#f0a500',
         backgroundColor: 'rgba(240,165,0,0.08)',
         pointBackgroundColor: '#f0a500',
-        pointBorderColor: '#16213e',
+        pointBorderColor: '#ffffff',
         pointBorderWidth: 2,
         pointRadius: 5,
         tension: 0.4,

@@ -10,11 +10,11 @@ function grade(value, [c, b, a, s]) {
 }
 
 const GRADE_CLS = {
-  S: 'bg-yellow-900/40 text-yellow-300',
-  A: 'bg-purple-900/40 text-purple-300',
-  B: 'bg-blue-900/40   text-blue-300',
-  C: 'bg-green-900/40  text-green-300',
-  D: 'bg-rpg-border/60 text-rpg-muted',
+  S: 'bg-yellow-100 text-yellow-700',
+  A: 'bg-purple-100 text-purple-700',
+  B: 'bg-blue-100   text-blue-700',
+  C: 'bg-green-100  text-green-700',
+  D: 'bg-gray-100   text-gray-500',
 };
 
 export default function CharacterStatPanel() {

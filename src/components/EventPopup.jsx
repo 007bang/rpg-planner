@@ -11,8 +11,8 @@ function fmtDuration(minutes) {
 }
 
 const STATUS_BADGE = {
-  studying:  { label: '학습중', cls: 'text-amber-400 bg-amber-900/30' },
-  completed: { label: '완료',   cls: 'text-rpg-green bg-green-900/30' },
+  studying:  { label: '학습중', cls: 'text-amber-600 bg-amber-50' },
+  completed: { label: '완료',   cls: 'text-rpg-green bg-green-50' },
 };
 
 export default function EventPopup({ extendedProps, position, onSetStatus, onDelete, onEdit, onClose }) {

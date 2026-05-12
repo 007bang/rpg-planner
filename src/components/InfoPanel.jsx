@@ -36,7 +36,7 @@ export default function InfoPanel() {
             return (
               <div
                 key={info.level}
-                className={`flex items-center gap-4 px-5 py-3.5 transition-colors${isCurrent ? ' bg-rpg-purple/15' : ' opacity-35'}`}
+                className={`flex items-center gap-4 px-5 py-3.5 transition-colors${isCurrent ? ' bg-rpg-green/10' : ' opacity-35'}`}
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0${isCurrent ? ' bg-rpg-purple text-white' : ' bg-rpg-border text-rpg-muted'}`}>
                   {info.level}
@@ -77,7 +77,7 @@ export default function InfoPanel() {
                 <p className="text-xs text-rpg-muted mt-0.5">{badge.desc}</p>
               </div>
               {badges[badge.key] && (
-                <span className="text-xs font-medium text-rpg-green bg-green-900/30 px-2 py-0.5 rounded-full flex-shrink-0">
+                <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full flex-shrink-0">
                   획득
                 </span>
               )}
