@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import { db } from '../db/db';
-
-const AVATARS = [
-  '🧑', '👦', '👧', '👨', '👩', '🧒',
-  '🧑‍🎓', '👨‍🎓', '👩‍🎓', '🧑‍💻', '👨‍💻', '👩‍💻',
-  '🐱', '🐶', '🦊', '🐸', '🐼', '🐨',
-  '🍎', '🍊', '🍋', '🍇', '🍓', '🥝', '🌽', '🍄',
-  '⚽', '🏀', '🎾', '🏈', '⚾', '🥊', '🏊', '🚴',
-  '🌸', '🌺', '🌻', '🌈', '⭐', '🌙', '☀️', '🌊',
-  '🎮', '🎸', '🎹', '🎨', '📚', '🔭', '🎯', '🏆',
-  '🧙‍♂️', '🧙‍♀️', '🧝', '🧝‍♂️', '🧝‍♀️', '🧛', '🧜', '🧚',
-  '🐯', '🦁', '🐻', '🐺', '🦝', '🐧', '🦉', '🐸',
-  '🤖', '👾', '🎃', '🦸', '🦹', '🧸',
-];
+import { FREE_AVATARS } from '../constants/avatars';
 
 const JOBS = [
   {
@@ -85,9 +73,12 @@ export default function CharacterSetup() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-indigo-200 mb-2">아바타 선택</label>
+            <label className="block text-sm font-medium text-indigo-200 mb-2">
+              아바타 선택
+              <span className="ml-2 text-xs text-indigo-400">🔓 추가 아바타는 상점에서 코인으로 해금</span>
+            </label>
             <div className="grid grid-cols-6 gap-1.5">
-              {AVATARS.map(em => (
+              {FREE_AVATARS.map(em => (
                 <button
                   key={em}
                   type="button"

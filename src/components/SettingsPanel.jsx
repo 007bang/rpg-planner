@@ -1,24 +1,12 @@
 import { useState, useRef } from 'react';
 import { db } from '../db/db';
 import { useToast } from '../hooks/useToast';
-import { useCharacter } from '../hooks/useStudies';
+import { useCharacter, useCoin } from '../hooks/useStudies';
 import SubjectManager from './SubjectManager';
+import { FREE_AVATARS, SHOP_CATEGORIES, AVATAR_PRICE } from '../constants/avatars';
 
 const JOB_ICONS  = { warrior: '⚔️', mage: '🧙', archer: '🏹' };
 const JOB_LABELS = { warrior: '전사', mage: '마법사', archer: '궁수' };
-
-const AVATARS = [
-  '🧑', '👦', '👧', '👨', '👩', '🧒',
-  '🧑‍🎓', '👨‍🎓', '👩‍🎓', '🧑‍💻', '👨‍💻', '👩‍💻',
-  '🐱', '🐶', '🦊', '🐸', '🐼', '🐨',
-  '🍎', '🍊', '🍋', '🍇', '🍓', '🥝', '🌽', '🍄',
-  '⚽', '🏀', '🎾', '🏈', '⚾', '🥊', '🏊', '🚴',
-  '🌸', '🌺', '🌻', '🌈', '⭐', '🌙', '☀️', '🌊',
-  '🎮', '🎸', '🎹', '🎨', '📚', '🔭', '🎯', '🏆',
-  '🧙‍♂️', '🧙‍♀️', '🧝', '🧝‍♂️', '🧝‍♀️', '🧛', '🧜', '🧚',
-  '🐯', '🦁', '🐻', '🐺', '🦝', '🐧', '🦉', '🐸',
-  '🤖', '👾', '🎃', '🦸', '🦹', '🧸',
-];
 
 const VALID_STATUSES   = ['pending', 'studying', 'completed'];
 const VALID_QUEST_STAT = ['pending', 'completed'];
@@ -81,12 +69,22 @@ export default function SettingsPanel() {
   const importModeRef = useRef('add');
   const { msg: toastMsg, show: showToast } = useToast();
 
-  const characters = useCharacter();
-  const character = characters?.[0] ?? null;
-  const [editChar, setEditChar] = useState(false);
+  const characters    = useCharacter();
+  const earnedCoin    = useCoin() ?? 0;
+  const character     = characters?.[0] ?? null;
+  const spentCoins    = character?.spentCoins ?? 0;
+  const availableCoins = earnedCoin - spentCoins;
+  const unlockedSet   = new Set(JSON.parse(character?.unlockedAvatars ?? '[]'));
+
+  const [editChar, setEditChar]       = useState(false);
   const [charNickname, setCharNickname] = useState('');
-  const [charJob, setCharJob] = useState('');
-  const [charAvatar, setCharAvatar] = useState('🧑');
+  const [charJob, setCharJob]         = useState('');
+  const [charAvatar, setCharAvatar]   = useState('🧑');
+  const [pendingUnlock, setPendingUnlock] = useState(null);
+
+  function isUnlocked(em) {
+    return FREE_AVATARS.includes(em) || unlockedSet.has(em);
+  }
 
   function startEditChar() {
     setCharNickname(character?.nickname ?? '');
@@ -99,6 +97,24 @@ export default function SettingsPanel() {
     if (!charNickname.trim() || !charJob || !character) return;
     await db.characters.update(character.id, { nickname: charNickname.trim(), job: charJob, avatar: charAvatar });
     setEditChar(false);
+  }
+
+  async function handleUnlockConfirm() {
+    if (!pendingUnlock || !character) return;
+    if (availableCoins < AVATAR_PRICE) {
+      showToast('코인이 부족해요');
+      setPendingUnlock(null);
+      return;
+    }
+    const next = new Set(unlockedSet);
+    next.add(pendingUnlock);
+    await db.characters.update(character.id, {
+      unlockedAvatars: JSON.stringify([...next]),
+      spentCoins: spentCoins + AVATAR_PRICE,
+    });
+    setCharAvatar(pendingUnlock);
+    showToast(`${pendingUnlock} 아바타를 해금했습니다!`);
+    setPendingUnlock(null);
   }
 
   async function handleExport() {
@@ -229,22 +245,66 @@ export default function SettingsPanel() {
                   className="border border-rpg-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rpg-purple"
                 />
               </label>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-rpg-muted">아바타</span>
-                <div className="grid grid-cols-6 gap-1.5">
-                  {AVATARS.map(em => (
-                    <button
-                      key={em}
-                      type="button"
-                      onClick={() => setCharAvatar(em)}
-                      className={`rounded-xl py-1.5 text-xl transition-all border-2 ${
-                        charAvatar === em
-                          ? 'bg-rpg-border border-rpg-purple'
-                          : 'border-transparent hover:bg-rpg-border/50'
-                      }`}
-                    >
-                      {em}
-                    </button>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-rpg-muted">아바타 상점</span>
+                  <span className="text-sm font-bold text-rpg-gold">🪙 {availableCoins}</span>
+                </div>
+
+                {/* 무료 아바타 */}
+                <div>
+                  <p className="text-xs text-rpg-muted mb-1">무료</p>
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {FREE_AVATARS.map(em => (
+                      <button
+                        key={em}
+                        type="button"
+                        onClick={() => setCharAvatar(em)}
+                        className={`rounded-xl py-1.5 text-xl transition-all border-2 ${
+                          charAvatar === em
+                            ? 'bg-rpg-border border-rpg-purple'
+                            : 'border-transparent hover:bg-rpg-border/50'
+                        }`}
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 유료 카테고리 */}
+                <div className="max-h-64 overflow-y-auto space-y-3 pr-1">
+                  {SHOP_CATEGORIES.map(cat => (
+                    <div key={cat.label}>
+                      <p className="text-xs text-rpg-muted mb-1">{cat.label} · 각 {AVATAR_PRICE}🪙</p>
+                      <div className="grid grid-cols-6 gap-1.5">
+                        {cat.avatars.map(em => {
+                          const unlocked = isUnlocked(em);
+                          const selected = charAvatar === em;
+                          return (
+                            <button
+                              key={em}
+                              type="button"
+                              onClick={() => unlocked ? setCharAvatar(em) : setPendingUnlock(em)}
+                              className={`relative rounded-xl py-1.5 text-xl transition-all border-2 ${
+                                selected
+                                  ? 'bg-rpg-border border-rpg-purple'
+                                  : unlocked
+                                    ? 'border-transparent hover:bg-rpg-border/50'
+                                    : 'border-transparent opacity-60 hover:opacity-80'
+                              }`}
+                            >
+                              {em}
+                              {!unlocked && (
+                                <span className="absolute -top-1 -right-1 text-[9px] leading-none bg-rpg-gold text-gray-900 font-bold rounded-full px-1 py-0.5">
+                                  🔒
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -350,6 +410,43 @@ export default function SettingsPanel() {
         onChange={handleFileChange}
         className="hidden"
       />
+
+      {/* 아바타 해금 확인 모달 */}
+      {pendingUnlock && (
+        <div
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+          onClick={() => setPendingUnlock(null)}
+        >
+          <div
+            className="bg-rpg-card rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl border border-rpg-border text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-3">{pendingUnlock}</div>
+            <p className="font-bold text-rpg-text mb-1">아바타 해금</p>
+            <p className="text-sm text-rpg-muted mb-1">
+              {AVATAR_PRICE}코인으로 해금할까요?
+            </p>
+            <p className="text-xs text-rpg-muted mb-5">
+              보유 코인: <span className="font-bold text-rpg-gold">🪙 {availableCoins}</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPendingUnlock(null)}
+                className="flex-1 min-h-[44px] rounded-xl border border-rpg-border text-rpg-text font-medium hover:bg-rpg-border transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleUnlockConfirm}
+                disabled={availableCoins < AVATAR_PRICE}
+                className="flex-1 min-h-[44px] rounded-xl bg-rpg-gold text-gray-900 font-bold hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {availableCoins < AVATAR_PRICE ? '코인 부족' : '해금!'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toastMsg && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-rpg-border text-rpg-text text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none whitespace-nowrap border border-rpg-border">
