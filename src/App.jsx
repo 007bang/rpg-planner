@@ -16,6 +16,7 @@ import QuestPanel from './components/QuestPanel';
 import CharacterStatPanel from './components/CharacterStatPanel';
 import ShopPanel from './components/ShopPanel';
 import SettingsPanel from './components/SettingsPanel';
+import InfoPanel from './components/InfoPanel';
 import CharacterSetup from './components/CharacterSetup';
 
 function todayStr() {
@@ -32,7 +33,14 @@ export default function App() {
   const [timerModal, setTimerModal] = useState({ open: false, key: 0, minutes: 0 });
   const { msg: toastMsg, show: showToast } = useToast();
   const attendanceChecked = useRef(false);
-  const [xpFloat, setXpFloat] = useState(null); // { amount, key }
+  const [xpFloat, setXpFloat] = useState(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [infoTab,  setInfoTab]  = useState('level');
+
+  function handleOpenInfo(tab) {
+    setInfoTab(tab);
+    setInfoOpen(true);
+  }
 
   function handleStudyComplete({ minutes, difficulty }) {
     const job = characters?.[0]?.job ?? null;
@@ -97,7 +105,7 @@ export default function App() {
           onReset={handleTimerReset}
         />
         <div id="section-status" className="scroll-mt-16">
-          <StatusPanel />
+          <StatusPanel onOpenInfo={handleOpenInfo} />
           <DdayBanner />
         </div>
         <div id="section-calendar" className="scroll-mt-16">
@@ -119,6 +127,7 @@ export default function App() {
           <SettingsPanel />
         </div>
       </div>
+      <InfoPanel open={infoOpen} onClose={() => setInfoOpen(false)} defaultTab={infoTab} />
       <AddStudyModal
         key={timerModal.key}
         open={timerModal.open}
